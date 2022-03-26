@@ -2071,7 +2071,7 @@ F 3 "~" H 1050 3150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L STM32_BluePill:YAAJ_BluePill_Part_Like U1
+L placaCub-rescue:YAAJ_BluePill_Part_Like-STM32_BluePill U1
 U 1 1 623AC22C
 P 5750 4000
 F 0 "U1" H 5750 5165 50  0000 C CNN

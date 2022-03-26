@@ -2429,72 +2429,37 @@ Wire Wire Line
 	1700 1900 1500 1900
 Wire Wire Line
 	1500 2000 1700 2000
-$Comp
-L Connector:Conn_01x06_Female J20
-U 1 1 6241A480
-P 4800 2250
-F 0 "J20" H 4828 2226 50  0000 L CNN
-F 1 "conector botones" H 4828 2135 50  0000 L CNN
-F 2 "Connector_Molex:Molex_KK-254_AE-6410-06A_1x06_P2.54mm_Vertical" H 4800 2250 50  0001 C CNN
-F 3 "~" H 4800 2250 50  0001 C CNN
-	1    4800 2250
-	1    0    0    -1  
-$EndComp
-Text GLabel 4350 2050 0    50   Input ~ 0
+Text GLabel 5400 2000 0    50   Input ~ 0
 B1
-Text GLabel 4350 2150 0    50   Input ~ 0
+Text GLabel 5400 2100 0    50   Input ~ 0
 B2
-Text GLabel 4350 2250 0    50   Input ~ 0
+Text GLabel 5400 2200 0    50   Input ~ 0
 B3
-Text GLabel 4350 2350 0    50   Input ~ 0
+Text GLabel 5400 2300 0    50   Input ~ 0
 B4
 $Comp
-L pspice:0 #GND?
+L pspice:0 #GND0119
 U 1 1 624C2559
-P 4000 2600
-F 0 "#GND?" H 4000 2500 50  0001 C CNN
-F 1 "0" H 4000 2689 50  0000 C CNN
-F 2 "" H 4000 2600 50  0001 C CNN
-F 3 "~" H 4000 2600 50  0001 C CNN
-	1    4000 2600
+P 5050 2450
+F 0 "#GND0119" H 5050 2350 50  0001 C CNN
+F 1 "0" H 5050 2539 50  0000 C CNN
+F 2 "" H 5050 2450 50  0001 C CNN
+F 3 "~" H 5050 2450 50  0001 C CNN
+	1    5050 2450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4000 2550 4000 2600
-$Comp
-L power:+5V #PWR?
-U 1 1 624C2561
-P 4000 2450
-F 0 "#PWR?" H 4000 2300 50  0001 C CNN
-F 1 "+5V" H 4015 2623 50  0000 C CNN
-F 2 "" H 4000 2450 50  0001 C CNN
-F 3 "" H 4000 2450 50  0001 C CNN
-	1    4000 2450
-	1    0    0    -1  
-$EndComp
+	5050 2400 5050 2450
 Wire Wire Line
-	4600 2450 4000 2450
+	5050 2400 5650 2400
 Wire Wire Line
-	4000 2550 4600 2550
+	5650 2300 5400 2300
 Wire Wire Line
-	4600 2350 4350 2350
+	5400 2200 5650 2200
 Wire Wire Line
-	4350 2250 4600 2250
+	5650 2100 5400 2100
 Wire Wire Line
-	4600 2150 4350 2150
-Wire Wire Line
-	4350 2050 4600 2050
-$Comp
-L Connector:Conn_01x06_Female J?
-U 1 1 623E35FC
-P 9400 2300
-F 0 "J?" H 9428 2276 50  0000 L CNN
-F 1 "conector botones" H 9428 2185 50  0000 L CNN
-F 2 "Connector_Molex:Molex_KK-254_AE-6410-06A_1x06_P2.54mm_Vertical" H 9400 2300 50  0001 C CNN
-F 3 "~" H 9400 2300 50  0001 C CNN
-	1    9400 2300
-	1    0    0    -1  
-$EndComp
+	5400 2000 5650 2000
 Wire Wire Line
 	7650 3100 7650 2900
 Wire Wire Line
@@ -2524,4 +2489,58 @@ Wire Wire Line
 	9100 2600 9100 3100
 Wire Wire Line
 	7650 3100 9100 3100
+$Comp
+L Connector:Conn_01x05_Male J20
+U 1 1 627162B8
+P 5850 2200
+F 0 "J20" H 5822 2224 50  0000 R CNN
+F 1 "conector botones" H 5822 2133 50  0000 R CNN
+F 2 "Connector_Molex:Molex_KK-254_AE-6410-05A_1x05_P2.54mm_Vertical" H 5850 2200 50  0001 C CNN
+F 3 "~" H 5850 2200 50  0001 C CNN
+	1    5850 2200
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x05_Male J21
+U 1 1 6288B894
+P 9400 2400
+F 0 "J21" H 9372 2424 50  0000 R CNN
+F 1 "Conn_01x05_Male" H 9372 2333 50  0000 R CNN
+F 2 "Connector_Molex:Molex_KK-254_AE-6410-05A_1x05_P2.54mm_Vertical" H 9400 2400 50  0001 C CNN
+F 3 "~" H 9400 2400 50  0001 C CNN
+	1    9400 2400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8050 1300 8050 1400
+Wire Wire Line
+	8050 1400 8950 1400
+Wire Wire Line
+	8950 1400 8950 2200
+Wire Wire Line
+	8950 2200 9200 2200
+Connection ~ 8050 1400
+Wire Wire Line
+	9200 2300 8800 2300
+Wire Wire Line
+	8800 2300 8800 1900
+Wire Wire Line
+	8800 1900 8050 1900
+Wire Wire Line
+	8050 1800 8050 1900
+Connection ~ 8050 1900
+Wire Wire Line
+	9200 2400 8050 2400
+Wire Wire Line
+	8050 2300 8050 2400
+Connection ~ 8050 2400
+Wire Wire Line
+	8050 2800 8050 2900
+Wire Wire Line
+	9200 2500 8850 2500
+Wire Wire Line
+	8850 2500 8850 2900
+Wire Wire Line
+	8850 2900 8050 2900
+Connection ~ 8050 2900
 $EndSCHEMATC
