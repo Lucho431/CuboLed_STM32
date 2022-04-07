@@ -1976,7 +1976,7 @@ L Switch:SW_MEC_5E SW1
 U 1 1 6276EC32
 P 7850 1400
 F 0 "SW1" H 7850 1785 50  0000 C CNN
-F 1 "SW_MEC_5E" H 7850 1694 50  0000 C CNN
+F 1 "boton arriba" H 7850 1694 50  0000 C CNN
 F 2 "Button_Switch_THT:SW_PUSH_6mm_H7.3mm" H 7850 1700 50  0001 C CNN
 F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 7850 1700 50  0001 C CNN
 	1    7850 1400
@@ -1987,7 +1987,7 @@ L Switch:SW_MEC_5E SW3
 U 1 1 6276FF6D
 P 7850 2400
 F 0 "SW3" H 7850 2785 50  0000 C CNN
-F 1 "SW_MEC_5E" H 7850 2694 50  0000 C CNN
+F 1 "boton izquierda" H 7850 2694 50  0000 C CNN
 F 2 "Button_Switch_THT:SW_PUSH_6mm_H7.3mm" H 7850 2700 50  0001 C CNN
 F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 7850 2700 50  0001 C CNN
 	1    7850 2400
@@ -2196,7 +2196,7 @@ L Switch:SW_MEC_5E SW2
 U 1 1 625EF982
 P 7850 1900
 F 0 "SW2" H 7850 2285 50  0000 C CNN
-F 1 "SW_MEC_5E" H 7850 2194 50  0000 C CNN
+F 1 "boton abajo" H 7850 2194 50  0000 C CNN
 F 2 "Button_Switch_THT:SW_PUSH_6mm_H7.3mm" H 7850 2200 50  0001 C CNN
 F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 7850 2200 50  0001 C CNN
 	1    7850 1900
@@ -2207,7 +2207,7 @@ L Switch:SW_MEC_5E SW4
 U 1 1 625EF988
 P 7850 2900
 F 0 "SW4" H 7850 3285 50  0000 C CNN
-F 1 "SW_MEC_5E" H 7850 3194 50  0000 C CNN
+F 1 "boton derecha" H 7850 3194 50  0000 C CNN
 F 2 "Button_Switch_THT:SW_PUSH_6mm_H7.3mm" H 7850 3200 50  0001 C CNN
 F 3 "http://www.apem.com/int/index.php?controller=attachment&id_attachment=1371" H 7850 3200 50  0001 C CNN
 	1    7850 2900
