@@ -4,26 +4,10 @@
 #define YAXIS 1
 #define ZAXIS 2
 
-#define POS_X 0
-#define NEG_X 1
-#define POS_Z 2
-#define NEG_Z 3
-#define POS_Y 4
-#define NEG_Y 5
-
 #define BUTTON_PIN 8
 #define RED_LED 5
 #define GREEN_LED 7
 
-#define TOTAL_EFFECTS 8
-#define RAIN 0
-#define PLANE_BOING 1
-#define SEND_VOXELS 2
-#define WOOP_WOOP 3
-#define CUBE_JUMP 4
-#define GLOW 5
-#define TEXT 6
-#define LIT 7
 
 #define RAIN_TIME 260
 #define PLANE_BOING_TIME 220
@@ -33,6 +17,27 @@
 #define GLOW_TIME 8
 #define TEXT_TIME 300
 #define CLOCK_TIME 500
+
+typedef enum{
+	POS_X = 0,
+	NEG_X,
+	POS_Z,
+	NEG_Z,
+	POS_Y,
+	NEG_Y,
+}T_POS;
+
+typedef enum{
+	RAIN = 0,
+	PLANE_BOING,
+	SEND_VOXELS,
+	WOOP_WOOP,
+	CUBE_JUMP,
+	GLOW,
+	TEXT,
+	LIT,
+	TOTAL_EFFECTS,
+}T_EFFECT;
 
 uint8_t characters[10][8] = {
   {0x3C, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x3C}, //0
