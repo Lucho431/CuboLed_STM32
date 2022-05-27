@@ -28,6 +28,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdlib.h"
+#include "74_HC595_SPI_lfs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,7 +94,10 @@ uint8_t characters[10][8] = {
   {0x3C, 0x42, 0x42, 0x42, 0x3C, 0x40, 0x40, 0x3C}, //9
 };
 
+//variables cubo
 uint8_t cube[8][8];
+uint8_t cube_vector[9];
+uint8_t cube_level;
 uint8_t currentEffect;
 
 uint16_t timer;
@@ -137,6 +141,8 @@ uint8_t charPosition = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+void renderCube (void);
+
 void clearCube(void);
 void drawCube(uint8_t, uint8_t, uint8_t, uint8_t);
 void shift(uint8_t);
@@ -193,6 +199,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  spi_74HC595_init(&hspi1, OUT_STORE_GPIO_Port, OUT_STORE_Pin);
+
   loading = 1;
   randomTimer = 0;
   currentEffect = RAIN;
@@ -229,19 +237,22 @@ int main(void)
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
 	  } //end if !HAL_GPIO...
 
-	  switch (currentEffect) {
-		  case RAIN: rain(); break;
-		  case PLANE_BOING: planeBoing(); break;
-		  case SEND_VOXELS: sendVoxels(); break;
-		  case WOOP_WOOP: woopWoop(); break;
-		  case CUBE_JUMP: cubeJump(); break;
-		  case GLOW: glow(); break;
-		  case TEXT: text("0123456789", 10); break;
-		  case LIT: lit(); break;
+//	  switch (currentEffect) {
+//		  case RAIN: rain(); break;
+//		  case PLANE_BOING: planeBoing(); break;
+//		  case SEND_VOXELS: sendVoxels(); break;
+//		  case WOOP_WOOP: woopWoop(); break;
+//		  case CUBE_JUMP: cubeJump(); break;
+//		  case GLOW: glow(); break;
+//		  case TEXT: text("0123456789", 10); break;
+//		  case LIT: lit(); break;
+//
+//	  default: rain();
+//	  } //end switch currentEffect
 
-	  default: rain();
-	  } //end switch currentEffect
+	  drawCube(0, 0, 0, 8);
 
+	  renderCube();
 
     /* USER CODE END WHILE */
 
@@ -306,6 +317,18 @@ void renderCube (void) {
     }
     digitalWrite(SS, HIGH);
   }*/
+
+	for (uint8_t i = 0; i < 8; i++) {
+		cube_vector[0] = (uint8_t) (0x01 << i);
+
+		for (uint8_t j = 0; j < 8; j++) {
+			cube_vector[j+1] = cube[i][j];
+		} //end for j
+
+		spi_74HC595_Transmit(cube_vector, sizeof(cube_vector));
+//		__NOP();
+	} //end for i
+
 } //end renderCube()
 
 void rain (void) {
