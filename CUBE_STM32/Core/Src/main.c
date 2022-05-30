@@ -22,6 +22,7 @@
 #include "adc.h"
 #include "i2c.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -97,8 +98,10 @@ uint8_t characters[10][8] = {
 //variables cubo
 uint8_t cube[8][8];
 uint8_t cube_vector[9];
-uint8_t cube_level;
+uint8_t cube_level = 0;
 uint8_t currentEffect;
+
+uint8_t flag_nextLevel = 0;
 
 uint16_t timer;
 
@@ -198,6 +201,7 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   spi_74HC595_init(&hspi1, OUT_STORE_GPIO_Port, OUT_STORE_Pin);
 
@@ -211,7 +215,9 @@ int main(void)
   HAL_ADC_Stop(&hadc1);
   HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
   HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
 
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -252,7 +258,12 @@ int main(void)
 
 	  drawCube(0, 0, 0, 8);
 
-	  renderCube();
+//	  renderCube();
+
+	  if (flag_nextLevel != 0){
+		  renderCube();
+		  flag_nextLevel = 0;
+	  }
 
     /* USER CODE END WHILE */
 
@@ -318,16 +329,18 @@ void renderCube (void) {
     digitalWrite(SS, HIGH);
   }*/
 
-	for (uint8_t i = 0; i < 8; i++) {
-		cube_vector[0] = (uint8_t) (0x01 << i);
+	cube_vector[0] = (uint8_t) (0x01 << cube_level);
 
-		for (uint8_t j = 0; j < 8; j++) {
-			cube_vector[j+1] = cube[i][j];
-		} //end for j
+	for (uint8_t j = 0; j < 8; j++) {
+		cube_vector[j+1] = cube[cube_level][j];
+	} //end for j
 
-		spi_74HC595_Transmit(cube_vector, sizeof(cube_vector));
-//		__NOP();
-	} //end for i
+	spi_74HC595_Transmit(cube_vector, sizeof(cube_vector));
+	cube_level++;
+	if (cube_level == 8){
+		cube_level = 0;
+	}
+	__NOP();
 
 } //end renderCube()
 
@@ -736,6 +749,12 @@ void clearCube(void) {
   }
 } //end clearCube()
 
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	if(htim->Instance == TIM2){
+		flag_nextLevel = 1;
+	}
+}
 /* USER CODE END 4 */
 
 /**
