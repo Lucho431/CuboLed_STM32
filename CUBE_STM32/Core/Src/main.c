@@ -62,14 +62,14 @@ typedef enum{
 #define YAXIS 1
 #define ZAXIS 2
 
-#define RAIN_TIME 260
-#define PLANE_BOING_TIME 220
-#define SEND_VOXELS_TIME 140
-#define WOOP_WOOP_TIME 350
-#define CUBE_JUMP_TIME 200
-#define GLOW_TIME 8
-#define TEXT_TIME 300
-#define CLOCK_TIME 500
+#define RAIN_TIME 0x8FFC
+#define PLANE_BOING_TIME 0x8FFC
+#define SEND_VOXELS_TIME 0x8FFC
+#define WOOP_WOOP_TIME 0x8FFC
+#define CUBE_JUMP_TIME 0x8FFC
+#define GLOW_TIME 0x8FFC
+#define TEXT_TIME 0x8FFC
+#define CLOCK_TIME 0x8FFC
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -99,7 +99,7 @@ uint8_t characters[10][8] = {
 uint8_t cube[8][8];
 uint8_t cube_vector[9];
 uint8_t cube_level = 0;
-uint8_t currentEffect;
+uint8_t currentEffect = 4;
 
 uint8_t flag_nextLevel = 0;
 
@@ -109,6 +109,12 @@ uint64_t randomTimer;
 uint16_t randomSeed;
 
 uint8_t loading;
+
+//variables controles
+uint8_t flag_tim3;
+uint8_t read_boton[4];
+uint8_t last_boton[4];
+uint8_t antiRebote = 1;
 
 //variables planeBoing()
 uint8_t planePosition = 0;
@@ -202,12 +208,13 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   spi_74HC595_init(&hspi1, OUT_STORE_GPIO_Port, OUT_STORE_Pin);
 
   loading = 1;
   randomTimer = 0;
-  currentEffect = RAIN;
+//  currentEffect = RAIN;
 
   HAL_ADC_Start(&hadc1);
   randomSeed = (uint16_t) HAL_ADC_GetValue(&hadc1);
@@ -217,16 +224,42 @@ int main(void)
   HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
 
-  HAL_TIM_Base_Start_IT(&htim2);
+  read_boton[0] = HAL_GPIO_ReadPin(IN_UP_GPIO_Port, IN_UP_Pin);
+  read_boton[1] = HAL_GPIO_ReadPin(IN_DOWN_GPIO_Port, IN_DOWN_Pin);
+  read_boton[2] = HAL_GPIO_ReadPin(IN_LEFT_GPIO_Port, IN_LEFT_Pin);
+  read_boton[3] = HAL_GPIO_ReadPin(IN_RIGHT_GPIO_Port, IN_RIGHT_Pin);
+
+  last_boton[0] = read_boton[0];
+  last_boton[1] = read_boton[1];
+  last_boton[2] = read_boton[2];
+  last_boton[3] = read_boton[3];
+
+  HAL_TIM_Base_Start_IT(&htim2); // frecuencia de refresco
+  HAL_TIM_Base_Start_IT(&htim3); // sincronizmo (10 * ms)
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (flag_tim3 != 0){
+		  if (antiRebote != 0){ //para leer cada 20 ms.
+			  antiRebote--;
+		  }else{
+			  read_boton[0] = HAL_GPIO_ReadPin(IN_UP_GPIO_Port, IN_UP_Pin);
+			  read_boton[1] = HAL_GPIO_ReadPin(IN_DOWN_GPIO_Port, IN_DOWN_Pin);
+			  read_boton[2] = HAL_GPIO_ReadPin(IN_LEFT_GPIO_Port, IN_LEFT_Pin);
+			  read_boton[3] = HAL_GPIO_ReadPin(IN_RIGHT_GPIO_Port, IN_RIGHT_Pin);
+
+			  antiRebote = 1;
+		  } //end if antiRebote
+
+		  flag_tim3 = 0;
+	  } //end if flag_tim3
+
 	  randomTimer++;
 
-	  if (!HAL_GPIO_ReadPin(IN_DOWN_GPIO_Port, IN_DOWN_Pin)){
+	  if (last_boton[0] != 0 && !read_boton[0]){
 		  clearCube();
 		  loading = 1;
 		  timer = 0;
@@ -241,24 +274,24 @@ int main(void)
 		  HAL_Delay(500);
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
-	  } //end if !HAL_GPIO...
+	  } //end if last_boton[]...
+	  last_boton[0] = read_boton[0];
 
-//	  switch (currentEffect) {
-//		  case RAIN: rain(); break;
-//		  case PLANE_BOING: planeBoing(); break;
-//		  case SEND_VOXELS: sendVoxels(); break;
-//		  case WOOP_WOOP: woopWoop(); break;
-//		  case CUBE_JUMP: cubeJump(); break;
-//		  case GLOW: glow(); break;
-//		  case TEXT: text("0123456789", 10); break;
-//		  case LIT: lit(); break;
-//
-//	  default: rain();
-//	  } //end switch currentEffect
 
-	  drawCube(0, 0, 0, 8);
+	  switch (currentEffect) {
+		  case RAIN: rain(); break;
+		  case PLANE_BOING: planeBoing(); break;
+		  case SEND_VOXELS: sendVoxels(); break;
+		  case WOOP_WOOP: woopWoop(); break;
+		  case CUBE_JUMP: cubeJump(); break;
+		  case GLOW: glow(); break;
+		  case TEXT: text("0123456789", 10); break;
+		  case LIT: lit(); break;
 
-//	  renderCube();
+	  default: cubeJump();
+	  } //end switch currentEffect
+
+//	  drawCube(0, 0, 0, 8);
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
@@ -753,6 +786,9 @@ void clearCube(void) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM2){
 		flag_nextLevel = 1;
+	}
+	if(htim->Instance == TIM3){
+		flag_tim3 = 1;
 	}
 }
 /* USER CODE END 4 */
