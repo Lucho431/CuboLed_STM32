@@ -49,11 +49,31 @@ typedef enum{
 	SEND_VOXELS,
 	WOOP_WOOP,
 	CUBE_JUMP,
+	FIREWORKS,
 	GLOW,
 	TEXT,
 	LIT,
 	TOTAL_EFFECTS,
 }T_EFFECT;
+
+typedef enum{
+	NEW_FW,
+	RISING_ROCKET,
+	EXPLODING,
+	FALLING,
+}T_FW_STATUS;
+
+typedef struct{
+	int8_t partX;
+	int8_t partY;
+	int8_t partZ;
+	int8_t velX;
+	int8_t velY;
+	int8_t velZ;
+	int8_t acelZ;
+	uint8_t resting;
+} T_FW_PARTICLE;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -66,10 +86,11 @@ typedef enum{
 #define PLANE_BOING_TIME 0x8FFC
 #define SEND_VOXELS_TIME 0x8FFC
 #define WOOP_WOOP_TIME 0x8FFC
-#define CUBE_JUMP_TIME 0x8FFC
+#define CUBE_JUMP_TIME 0x7FFF
 #define GLOW_TIME 0x8FFC
 #define TEXT_TIME 0x8FFC
 #define CLOCK_TIME 0x8FFC
+#define FIREWORK_TIME 0x5FFC
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -99,7 +120,7 @@ uint8_t characters[10][8] = {
 uint8_t cube[8][8];
 uint8_t cube_vector[9];
 uint8_t cube_level = 0;
-uint8_t currentEffect = 4;
+T_EFFECT currentEffect = FIREWORKS;
 
 uint8_t flag_nextLevel = 0;
 
@@ -145,6 +166,17 @@ uint16_t glowCount = 0;
 uint8_t charCounter = 0;
 uint8_t charPosition = 0;
 
+//variables fireWork()
+uint8_t exploded;
+T_FW_STATUS statusFireWork = NEW_FW;
+uint8_t rocketX = 0;
+uint8_t rocketY = 0;
+uint8_t rocketZ = 0;
+uint8_t numParticles;
+T_FW_PARTICLE particle[40];
+uint8_t deadParticles = 0;
+uint8_t explocionCicle = 2;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -164,6 +196,7 @@ void planeBoing(void);
 void sendVoxels(void);
 void woopWoop(void);
 void cubeJump(void);
+void fireWork(void);
 void glow(void);
 void text(char[], uint8_t);
 void lit(void);
@@ -284,14 +317,15 @@ int main(void)
 		  case SEND_VOXELS: sendVoxels(); break;
 		  case WOOP_WOOP: woopWoop(); break;
 		  case CUBE_JUMP: cubeJump(); break;
+		  case FIREWORKS: fireWork(); break;
 		  case GLOW: glow(); break;
 		  case TEXT: text("0123456789", 10); break;
 		  case LIT: lit(); break;
-
-	  default: cubeJump();
+		  default: cubeJump();
 	  } //end switch currentEffect
 
 //	  drawCube(0, 0, 0, 8);
+//	  fireWork();
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
@@ -597,6 +631,127 @@ void text(char string[], uint8_t len) {
     }
   }
 } //end text()
+
+void fireWork (void){
+
+	if (loading != 0) {
+	    clearCube();
+	    loading = 0;
+	}
+
+	timer++;
+	if (timer > FIREWORK_TIME){
+
+		timer = 0;
+		clearCube();
+
+		switch (statusFireWork){
+			case NEW_FW:
+				rocketX = 2 + (rand() % 4); //between 2 and 5.
+				rocketY = 2 + (rand() % 4); //between 2 and 5.
+				rocketZ = 0;
+				setVoxel(rocketX, rocketZ, rocketY);
+				statusFireWork = RISING_ROCKET;
+			break;
+			case RISING_ROCKET:
+				rocketZ++;
+				if (rocketZ > 4){
+					statusFireWork = EXPLODING;
+//					statusFireWork = NEW_FW;
+					deadParticles = 0;
+					explocionCicle = 0;
+					numParticles = (30 + (rand() % 10) ); //num of particles between 30 and 40.
+					for(uint8_t i = 0 ; i < numParticles; i++){
+						particle[i].partX = rocketX;
+						particle[i].partY = rocketY;
+						particle[i].partZ = rocketZ;
+						particle[i].velX = -2 + (rand() % 5);
+						particle[i].velY = -2 + (rand() % 5);
+						particle[i].velZ = -1 + (rand() % 3);
+						particle[i].resting = 0;
+					}
+				}
+				setVoxel(rocketX, rocketZ, rocketY);
+			break;
+			case EXPLODING:
+				explocionCicle++;
+				for(uint8_t i = 0 ; i < numParticles; i++){
+					particle[i].partX += particle[i].velX;
+					particle[i].partY += particle[i].velY;
+					particle[i].partZ += particle[i].velZ;
+
+					if(particle[i].partX < (rocketX - explocionCicle)) particle[i].partX = (rocketX - explocionCicle);
+					if(particle[i].partY < (rocketY - explocionCicle)) particle[i].partY = (rocketY - explocionCicle);
+					if(particle[i].partZ < (rocketZ - explocionCicle)) particle[i].partZ = (rocketZ - explocionCicle);
+
+					if(particle[i].partX > (rocketX + explocionCicle)) particle[i].partX = (rocketX + explocionCicle);
+					if(particle[i].partY > (rocketY + explocionCicle)) particle[i].partY = (rocketY + explocionCicle);
+					if(particle[i].partZ > (rocketZ + explocionCicle)) particle[i].partZ = (rocketZ + explocionCicle);
+
+					particle[i].velX = -2 + (rand() % 5);
+					particle[i].velY = -2 + (rand() % 5);
+					particle[i].velZ = rand() % 2;
+
+					if(particle[i].partZ >= 0){
+						if(particle[i].partZ < 8)
+							setVoxel(particle[i].partX, particle[i].partZ, particle[i].partY);
+					}else{
+						deadParticles++;
+					}
+				}
+
+				if (explocionCicle == 3){
+					statusFireWork = FALLING;
+				}
+
+			break;
+			case FALLING:
+				for(uint8_t i = 0 ; i < numParticles; i++){
+//					particle[i].velZ--;
+
+//					particle[i].velX--;
+//					particle[i].velY--;
+//					particle[i].velZ--;
+
+					particle[i].partX += particle[i].velX;
+					particle[i].partY += particle[i].velY;
+					particle[i].partZ += particle[i].velZ;
+
+					particle[i].velX = 0;
+					particle[i].velY = 0;
+//					particle[i].velZ = 0;
+					if (particle[i].velZ > -1) particle[i].velZ--;
+
+					if(particle[i].partX < 0) particle[i].partX = 0;
+					if(particle[i].partY < 0) particle[i].partY = 0;
+//					if(particle[i].partZ < 0) particle[i].partZ = 0;
+					if(particle[i].partX > 7) particle[i].partX = 7;
+					if(particle[i].partY > 7) particle[i].partY = 7;
+//					if(particle[i].partZ > 7) particle[i].partZ = 7;
+
+					if(particle[i].partZ >= 0){
+						if(particle[i].partZ < 8)
+							setVoxel(particle[i].partX, particle[i].partZ, particle[i].partY);
+					}else{
+
+						if (particle[i].resting < 6){
+							setVoxel(particle[i].partX, 0, particle[i].partY);
+							particle[i].resting++;
+						}else{
+							deadParticles++;
+						}
+					}
+
+				} //end for i
+
+				if (deadParticles >= numParticles)
+					statusFireWork = NEW_FW;
+			break;
+			default:
+			break;
+		} //end switch (statusFireWork)
+	} //end if (timer > FIREWORK_TIME)
+} //end fireWork ()
 
 void lit() {
   if (loading) {
