@@ -30,6 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdlib.h"
 #include "74_HC595_SPI_lfs.h"
+#include "botones_lfs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -292,7 +293,7 @@ int main(void)
 
 	  randomTimer++;
 
-	  if (last_boton[0] != 0 && !read_boton[0]){
+	  if (last_boton[0] != 0 && !read_boton[0]){ //UP
 		  clearCube();
 		  loading = 1;
 		  timer = 0;
@@ -308,7 +309,28 @@ int main(void)
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
 	  } //end if last_boton[]...
+
+	  if (last_boton[1] != 0 && !read_boton[1]){ //DOWN
+		  clearCube();
+		  loading = 1;
+		  timer = 0;
+		  currentEffect--;
+		  if (currentEffect != 0) {
+			  currentEffect--;
+		  }else{
+			  currentEffect = TOTAL_EFFECTS - 1;
+		  }
+		  srand(randomTimer);
+		  randomTimer = 0;
+		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
+		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
+		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+	  } //end if last_boton[]...
+
 	  last_boton[0] = read_boton[0];
+	  last_boton[1] = read_boton[1];
 
 
 	  switch (currentEffect) {
