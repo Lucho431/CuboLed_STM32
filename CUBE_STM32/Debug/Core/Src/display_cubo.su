@@ -1,0 +1,5 @@
+../Core/Src/display_cubo.c:14:6:init_pantalla	8	static
+../Core/Src/display_cubo.c:24:6:set_pantalla	16	static
+../Core/Src/display_cubo.c:118:6:setTexto_pantalla	16	static
+../Core/Src/display_cubo.c:124:6:pantallaLista	4	static
+../Core/Src/display_cubo.c:128:6:pantallaUpdate	4	static

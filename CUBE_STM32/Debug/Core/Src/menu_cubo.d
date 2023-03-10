@@ -27,7 +27,8 @@ Core/Src/menu_cubo.o: ../Core/Src/menu_cubo.c ../Core/Inc/menu_cubo.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
+ ../Core/Inc/botones_lfs.h ../Core/Inc/main.h ../Core/Inc/display_cubo.h
 ../Core/Inc/menu_cubo.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
@@ -58,3 +59,6 @@ Core/Src/menu_cubo.o: ../Core/Src/menu_cubo.c ../Core/Inc/menu_cubo.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+../Core/Inc/botones_lfs.h:
+../Core/Inc/main.h:
+../Core/Inc/display_cubo.h:

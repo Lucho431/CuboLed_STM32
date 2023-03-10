@@ -9,6 +9,7 @@
 #define INC_MENU_TABLERO_H_
 
 #include "stm32f1xx_hal.h"
+#include "botones_lfs.h"
 
 typedef struct t_menu {
 	int8_t nombre;
@@ -28,7 +29,5 @@ typedef enum{
 //funciones publicas
 void start_menu (void);
 void check_menu (void);
-void check_pulsadores (void);
-void check_duracionPulsadores (void);
 
 #endif /* INC_MENU_TABLERO_H_ */

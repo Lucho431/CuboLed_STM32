@@ -31,6 +31,7 @@
 #include "stdlib.h"
 #include "74_HC595_SPI_lfs.h"
 #include "botones_lfs.h"
+#include "menu_cubo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -133,9 +134,7 @@ uint16_t randomSeed;
 uint8_t loading;
 
 //variables controles
-uint8_t flag_tim3;
-uint8_t read_boton[4];
-uint8_t last_boton[4];
+uint8_t flag_tim3; //cada 10 ms.
 uint8_t antiRebote = 1;
 
 //variables planeBoing()
@@ -258,32 +257,24 @@ int main(void)
   HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
 
-  read_boton[0] = HAL_GPIO_ReadPin(IN_UP_GPIO_Port, IN_UP_Pin);
-  read_boton[1] = HAL_GPIO_ReadPin(IN_DOWN_GPIO_Port, IN_DOWN_Pin);
-  read_boton[2] = HAL_GPIO_ReadPin(IN_LEFT_GPIO_Port, IN_LEFT_Pin);
-  read_boton[3] = HAL_GPIO_ReadPin(IN_RIGHT_GPIO_Port, IN_RIGHT_Pin);
-
-  last_boton[0] = read_boton[0];
-  last_boton[1] = read_boton[1];
-  last_boton[2] = read_boton[2];
-  last_boton[3] = read_boton[3];
-
   HAL_TIM_Base_Start_IT(&htim2); // frecuencia de refresco
   HAL_TIM_Base_Start_IT(&htim3); // sincronizmo (10 * ms)
+
+  start_menu();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  update_teclas();
+	  check_menu();
+
 	  if (flag_tim3 != 0){
 		  if (antiRebote != 0){ //para leer cada 20 ms.
 			  antiRebote--;
 		  }else{
-			  read_boton[0] = HAL_GPIO_ReadPin(IN_UP_GPIO_Port, IN_UP_Pin);
-			  read_boton[1] = HAL_GPIO_ReadPin(IN_DOWN_GPIO_Port, IN_DOWN_Pin);
-			  read_boton[2] = HAL_GPIO_ReadPin(IN_LEFT_GPIO_Port, IN_LEFT_Pin);
-			  read_boton[3] = HAL_GPIO_ReadPin(IN_RIGHT_GPIO_Port, IN_RIGHT_Pin);
+			  lecturaTeclas();
 
 			  antiRebote = 1;
 		  } //end if antiRebote
@@ -293,7 +284,7 @@ int main(void)
 
 	  randomTimer++;
 
-	  if (last_boton[0] != 0 && !read_boton[0]){ //UP
+	  if (getStatBoton(IN_UP) == FALL){ //UP
 		  clearCube();
 		  loading = 1;
 		  timer = 0;
@@ -308,9 +299,9 @@ int main(void)
 		  HAL_Delay(500);
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
-	  } //end if last_boton[]...
+	  } //end if getStatBoton...
 
-	  if (last_boton[1] != 0 && !read_boton[1]){ //DOWN
+	  if (getStatBoton(IN_DOWN) == FALL){ //DOWN
 		  clearCube();
 		  loading = 1;
 		  timer = 0;
@@ -327,10 +318,7 @@ int main(void)
 		  HAL_Delay(500);
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
-	  } //end if last_boton[]...
-
-	  last_boton[0] = read_boton[0];
-	  last_boton[1] = read_boton[1];
+	  } //end if getStatBoton...
 
 
 	  switch (currentEffect) {
