@@ -409,8 +409,24 @@ switch(estatus_juego){
 		if (flag_timeoutCaer != 0){
 			pos_piezaZ--;
 			
+			//comprueba ocupación
+			flag_movGiroProhibido = 0;
+			for (uint8_t i = 0; i < lado; i++ ){
+				for (uint8_t j = 0; j < lado; j++){
+					for (uint8_t k = 0; k < lado; k++){
+						if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
+							//anula el movimiento
+							flag_movGiroProhibido = 1;
+							break; //sale del for o del case??
+						} //end if...
 						
-		}
+						if (pieza[piezaActiva]->matriz)
+						
+					} //end for z
+				} //end for y
+			} //end for x
+						
+		} //end if flag_timeoutCaer != 0
 	break;
 	default:
 	break;
