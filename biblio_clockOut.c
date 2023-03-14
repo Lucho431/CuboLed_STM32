@@ -19,6 +19,7 @@ typedef enum{
 	CHECK_PIEZA,
 	CHECK_MOV_GIROS,
 	CHECK_CAIDA,
+	CHECK_PISO_LLENO,
 }T_ESTATUS_JUEGO;
 
 
@@ -38,11 +39,12 @@ uint8_t flag_movGiroProhibido = 0; // indica si no está permitido el giro o  mo
 uint8_t flag_timeoutCaer = 0;
 uint8_t opcupacion[8][8] = {0}; //matriz de ocupacion
 T_ESTATUS_JUEGO estatus_juego = JUEGO_IDLE;
-uint8_t index_pieza;
-uint8_t pos_piezaX;
-uint8_t pos_piezaY;
-uint8_t pos_piezaZ;
+int8_t index_pieza;
+int8_t pos_piezaX;
+int8_t pos_piezaY;
+int8_t pos_piezaZ;
 char entradaJoystick;
+uint8_t completaPiso = 0; //cuando llega a 8, es un piso lleno.
 
 T_PIEZA piezaActiva;
 
@@ -82,6 +84,12 @@ T_PIEZA pieza [SIZE_TIPO_PIEZA] = {
 };
 
 
+for (uint8_t j = 0; j < 8; j++){
+	for (uint8_t k = 0; k < 8; k++){
+		cube[j][k] =0;
+	} //end for k
+} //end for j
+
 switch(estatus_juego){
 	case JUEGO_IDLE:
 		estatus_juego = ARRANCA_JUEGO;
@@ -97,7 +105,7 @@ switch(estatus_juego){
 			// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
 			
 			//crea la pieza
-			for (uint8_t i = 0; i < lado; i++){
+			for (int8_t i = 0; i < lado; i++){
 				pieza[index_pieza]->matriz[i][1] = pieza[index_pieza]->dibujo[i];
 			} //end for
 			
@@ -107,16 +115,23 @@ switch(estatus_juego){
 			pos_piezaZ = 7;
 			
 			//dibuja la pieza
-			for (uint8_t i = 0; i < lado; i++ ){
-				for (uint8_t j = 0; j < lado; j++){
-					for (uint8_t k = 0; k < lado; k++){
-						if ( !(ocupacion[j + pos_piezaY][k + pos_piezaZ] & (0b1 << (i + pos_piezaX) )) ){
-							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
-								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
-							}else{
-								cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX));
-							} //end if (pieza[index_pieza]...
+			for (int8_t i = 0; i < lado; i++ ){
+				for (int8_t j = 0; j < lado; j++){
+					for (int8_t k = 0; k < lado; k++){
+						if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
+							cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 						}else{
+							cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX));
+						} //end if (pieza[index_pieza]...
+					} //end for z
+				} //end for y
+			} //end for x
+			
+			//comprueba ocupación
+			for (int8_t i = 0; i < lado; i++ ){
+				for (int8_t j = 0; j < lado; j++){
+					for (int8_t k = 0; k < lado; k++){
+						if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 							//GAME OVER
 							estatus_juego = JUEGO_IDLE;
 							break; //sale del for o del case??
@@ -137,9 +152,9 @@ switch(estatus_juego){
 					pos_piezaY++;
 					
 					//comprueba ocupación
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) & (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 									//anula el movimiento
 									pos_piezaY--;
@@ -150,10 +165,14 @@ switch(estatus_juego){
 					} //end for x
 					
 					//dibuja la pieza
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
-								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
+								if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
+									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
+								}else{
+									cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX));
+								} //end if (pieza[index_pieza]...
 							} //end for z
 						} //end for y
 					} //end for x
@@ -165,9 +184,9 @@ switch(estatus_juego){
 					pos_piezaY--;
 					
 					//comprueba ocupación
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) & (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 									//anula el movimiento
 									pos_piezaY++;
@@ -178,9 +197,9 @@ switch(estatus_juego){
 					} //end for x
 					
 					//dibuja la pieza
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
@@ -197,9 +216,9 @@ switch(estatus_juego){
 					pos_piezaX++;
 					
 					//comprueba ocupación
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) & (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 									//anula el movimiento
 									pos_piezaX--;
@@ -210,9 +229,9 @@ switch(estatus_juego){
 					} //end for x
 					
 					//dibuja la pieza
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
@@ -229,9 +248,9 @@ switch(estatus_juego){
 					pos_piezaX--;
 					
 					//comprueba ocupación
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 									//anula el movimiento
 									pos_piezaX++;
@@ -242,9 +261,9 @@ switch(estatus_juego){
 					} //end for x
 					
 					//dibuja la pieza
-					for (uint8_t i = 0; i < lado; i++ ){
-						for (uint8_t j = 0; j < lado; j++){
-							for (uint8_t k = 0; k < lado; k++){
+					for (int8_t i = 0; i < lado; i++ ){
+						for (int8_t j = 0; j < lado; j++){
+							for (int8_t k = 0; k < lado; k++){
 								if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
@@ -258,9 +277,9 @@ switch(estatus_juego){
 			break;
 			case '1': // giro eje z
 				// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
-				for (uint8_t k = 0; k < lado; k++ ){
-					for (uint8_t j = 0; j < lado; j++){
-						for (uint8_t i = 0; i < lado; i++){
+				for (int8_t k = 0; k < lado; k++ ){
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t i = 0; i < lado; i++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 								pieza[index_pieza]->matrizAux[i][k] |= (0b1 << (lado - j) );
@@ -274,9 +293,9 @@ switch(estatus_juego){
 				
 				//comprueba ocupación
 				flag_movGiroProhibido = 0;
-				for (uint8_t i = 0; i < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){
-						for (uint8_t k = 0; k < lado; k++){
+				for (int8_t i = 0; i < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t k = 0; k < lado; k++){
 							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
@@ -289,10 +308,10 @@ switch(estatus_juego){
 				if (flag_movGiroProhibido != 0) break;
 				
 				//dibuja la pieza
-				for (uint8_t i = 0; k < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){						
+				for (int8_t i = 0; k < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){						
 						pieza[index_pieza]->matriz[j][k] = pieza[index_pieza]->matrizAux[j][k];
-						for (uint8_t k = 0; k < lado; k++){
+						for (int8_t k = 0; k < lado; k++){
 							if (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ){
 								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 							}else{
@@ -305,9 +324,9 @@ switch(estatus_juego){
 			break;
 			case '2': // giro eje x
 				// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
-				for (uint8_t i = 0; i < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){
-						for (uint8_t k = 0; k < lado; k++){
+				for (int8_t i = 0; i < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t k = 0; k < lado; k++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 								pieza[index_pieza]->matrizAux[lado - k][j] |= (0b1 << i);
@@ -321,9 +340,9 @@ switch(estatus_juego){
 				
 				//comprueba ocupación
 				flag_movGiroProhibido = 0;
-				for (uint8_t i = 0; i < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){
-						for (uint8_t k = 0; k < lado; k++){
+				for (int8_t i = 0; i < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t k = 0; k < lado; k++){
 							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
@@ -336,10 +355,10 @@ switch(estatus_juego){
 				if (flag_movGiroProhibido != 0) break;
 				
 				//dibuja la pieza
-				for (uint8_t i = 0; k < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){						
+				for (int8_t i = 0; k < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){						
 						pieza[index_pieza]->matriz[j][k] = pieza[index_pieza]->matrizAux[j][k];
-						for (uint8_t k = 0; k < lado; k++){
+						for (int8_t k = 0; k < lado; k++){
 							if (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ){
 								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 							}else{
@@ -351,9 +370,9 @@ switch(estatus_juego){
 			break:
 			case '3': // giro eje y
 				// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
-				for (uint8_t j = 0; j < lado; j++ ){
-					for (uint8_t k = 0; k < lado; k++){
-						for (uint8_t i = 0; i < lado; i++){
+				for (int8_t j = 0; j < lado; j++ ){
+					for (int8_t k = 0; k < lado; k++){
+						for (int8_t i = 0; i < lado; i++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
 								pieza[index_pieza]->matrizAux[j][lado - i] |= (0b1 << (lado - k) );
@@ -367,9 +386,9 @@ switch(estatus_juego){
 				
 				//comprueba ocupación
 				flag_movGiroProhibido = 0;
-				for (uint8_t i = 0; i < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){
-						for (uint8_t k = 0; k < lado; k++){
+				for (int8_t i = 0; i < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t k = 0; k < lado; k++){
 							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
@@ -382,10 +401,10 @@ switch(estatus_juego){
 				if (flag_movGiroProhibido != 0) break;
 				
 				//dibuja la pieza
-				for (uint8_t i = 0; k < lado; i++ ){
-					for (uint8_t j = 0; j < lado; j++){						
+				for (int8_t i = 0; k < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){						
 						pieza[index_pieza]->matriz[j][k] = pieza[index_pieza]->matrizAux[j][k];
-						for (uint8_t k = 0; k < lado; k++){
+						for (int8_t k = 0; k < lado; k++){
 							if (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ){
 								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 							}else{
@@ -408,29 +427,109 @@ switch(estatus_juego){
 	case CHECK_CAIDA:
 		if (flag_timeoutCaer != 0){
 			pos_piezaZ--;
-			
+
 			//comprueba ocupación
 			flag_movGiroProhibido = 0;
-			for (uint8_t i = 0; i < lado; i++ ){
-				for (uint8_t j = 0; j < lado; j++){
-					for (uint8_t k = 0; k < lado; k++){
-						if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
-							//anula el movimiento
-							flag_movGiroProhibido = 1;
-							break; //sale del for o del case??
-						} //end if...
-						
-						if (pieza[piezaActiva]->matriz)
-						
-					} //end for z
-				} //end for y
-			} //end for x
-						
+			for (int8_t k = 0; k < lado; k++ ){
+				
+				if (k + pos_piezaZ >= 0){ //comprueba que esté dentro del cubo el ciclo actual
+				
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t i = 0; i < lado; i++){
+							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
+								//anula el movimiento
+								flag_movGiroProhibido = 1;
+								break; //sale del for o del case??
+							} //end if...
+						} //end for x
+					} //end for y
+					
+				}else{ //si está debajo del cubo...
+					
+					for (int8_t j = 0; j < lado; j++){
+						for (int8_t i = 0; i < lado; i++){
+							if ( pieza[index_pieza]->matriz[j][k] != 0  ){
+								//anula el movimiento
+								flag_movGiroProhibido = 1;
+								break; //sale del for o del case??
+							} //end if...
+						} //end for x
+					} //end for y
+					
+				} // end if  k + pos_piezaZ >= 0
+				
+			} //end for z
+			
+			if (flag_movGiroProhibido != 0){
+				pos_piezaZ++;	
+				flag_pieza = 0;
+				//llena la matriz de ocupacion
+				for (int8_t i = 0; k < lado; i++ ){
+					for (int8_t j = 0; j < lado; j++){						
+						ocupacion[j + pos_piezaY][k + pos_piezaZ] |= pieza[index_pieza]->matriz[j][k];
+						for (int8_t k = 0; k < lado; k++){
+							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
+								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
+							}else{
+								cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+							} //end if (pieza[index_pieza]...
+						} //end for z
+					} //end for y
+				} //end for x
+				flag_movGiroProhibido = 0;
+			} //end if (flag_movGiroProhibido != 0)
+			
+			flag_timeoutCaer = 0;
 		} //end if flag_timeoutCaer != 0
+		
+		estatus_juego = CHECK_PISO_LLENO;
 	break;
+	case CHECK_PISO_LLENO:
+		completaPiso = 0;
+		
+		for (int8_t k = 0; k < 8; k++){
+			
+			for (int8_t j = 0; j < 8; j++){
+				if (ocupacion[j][k] == 0xFF){
+					completaPiso++;
+				}else{
+					completaPiso = 0;
+					j = 8; //asquerosidad para terminar el bucle
+				} //end if (ocupacion[j][k] == 0xFF)
+			} //end for j
+			
+			 if (completaPiso == 8){
+				 for (int8_t q = k; q < 8; q++){
+					 
+					 if (q == 7){ //llegue al piso 7
+						 for (int8_t j = 0; j < 8; j++){
+							 ocupacion[j][k] = 0;
+						 } //end for j
+					 }else{ //si no llegue al piso 7
+						for (int8_t j = 0; j < 8; j++){
+							 ocupacion[j][k] = ocupacion[j][k + 1];
+						 } //end for j
+					 } //end if q == 7
+					 
+				 } //end for q
+				 completaPiso = 0;
+			 } //end if (completaPiso == 8)
+		} //end for k
+		
+		estatus_juego = CHECK_PIEZA;
 	default:
 	break;
 } //end switch estatus_juego
+
+for (uint8_t i = 0; i < 8; i++){
+	for (uint8_t j = 0; j < 8; j++){
+		for (uint8_t k = 0; k < 8; k++){
+			if (ocupacion[j][k] & (0b1 << i) ){
+				cube[j][k] |= (0x01 << i );
+			} //end if ocupacion...
+		} //end for k
+	} //end for j
+} //end for i
 
 /*
  * PASOS:
