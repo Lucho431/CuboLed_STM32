@@ -9,6 +9,7 @@
 #define INC_BLOCKOUT_H_
 
 #include "stm32f1xx_hal.h"
+#include "stdlib.h"
 
 typedef enum{
 	PUNTO,
@@ -37,9 +38,9 @@ typedef enum{
 typedef struct t_pieza{
 	T_TIPO_PIEZA nombre;
 	uint8_t lado; //dimension de la matriz: lado*lado*lado.
-	uint8_t matriz[4][4]; //puntero a la matriz correspondiente.
-	uint8_t matrizAux[4][4]; //puntero a la matriz auxiliar correspondiente.
-	uint8_t dibujo[4]; //puntero al dibujo de la pieza
+	uint8_t** matriz; //puntero a la matriz correspondiente.
+	uint8_t** matrizAux; //puntero a la matriz auxiliar correspondiente.
+	uint8_t* dibujo; //puntero al dibujo de la pieza
 }T_PIEZA;
 
 

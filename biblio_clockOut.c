@@ -282,9 +282,9 @@ switch(estatus_juego){
 						for (int8_t i = 0; i < lado; i++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
-								pieza[index_pieza]->matrizAux[i][k] |= (0b1 << (lado - j) );
+								pieza[index_pieza]->matrizAux[i][k] |= (0b1 << (lado - 1 - j) );
 							}else{
-								pieza[index_pieza]->matrizAux[i][k] ^= (0b1 << (lado - j) ); //nunca use esta expresion para setear ceros.
+								pieza[index_pieza]->matrizAux[i][k] &= ~(0b1 << (lado - 1 - j) ); //nunca use esta expresion para setear ceros.
 							} //end if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) )
 							
 						} //end for x
@@ -296,7 +296,7 @@ switch(estatus_juego){
 				for (int8_t i = 0; i < lado; i++ ){
 					for (int8_t j = 0; j < lado; j++){
 						for (int8_t k = 0; k < lado; k++){
-							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
+							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
 								break; //sale del for o del case??
@@ -329,9 +329,9 @@ switch(estatus_juego){
 						for (int8_t k = 0; k < lado; k++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
-								pieza[index_pieza]->matrizAux[lado - k][j] |= (0b1 << i);
+								pieza[index_pieza]->matrizAux[lado - 1 - k][j] |= (0b1 << i);
 							}else{
-								pieza[index_pieza]->matrizAux[lado - k][j] ^= (0b1 << i); //nunca use esta expresion para setear ceros.
+								pieza[index_pieza]->matrizAux[lado - 1 - k][j] &= ~(0b1 << i); //nunca use esta expresion para setear ceros.
 							} //end if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) )
 							
 						} //end for x
@@ -343,7 +343,7 @@ switch(estatus_juego){
 				for (int8_t i = 0; i < lado; i++ ){
 					for (int8_t j = 0; j < lado; j++){
 						for (int8_t k = 0; k < lado; k++){
-							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
+							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
 								break; //sale del for o del case??
@@ -375,9 +375,9 @@ switch(estatus_juego){
 						for (int8_t i = 0; i < lado; i++){
 							
 							if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ){
-								pieza[index_pieza]->matrizAux[j][lado - i] |= (0b1 << (lado - k) );
+								pieza[index_pieza]->matrizAux[j][lado - i] |= (0b1 << (lado - 1 - k) );
 							}else{
-								pieza[index_pieza]->matrizAux[j][lado - i] ^= (0b1 << (lado - k) ); //nunca use esta expresion para setear ceros.
+								pieza[index_pieza]->matrizAux[j][lado - i] &= ~(0b1 << (lado - 1 - k) ); //nunca use esta expresion para setear ceros.
 							} //end if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) )
 							
 						} //end for x
@@ -389,7 +389,7 @@ switch(estatus_juego){
 				for (int8_t i = 0; i < lado; i++ ){
 					for (int8_t j = 0; j < lado; j++){
 						for (int8_t k = 0; k < lado; k++){
-							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matriz[j][k] & (0b1 << i) ) ){
+							if ( (ocupacion[j + pos_piezaY][k + pos_piezaZ] & ( 0b1 << (i + pos_piezaX) )) && (pieza[index_pieza]->matrizAux[j][k] & (0b1 << i) ) ){
 								//anula el movimiento
 								flag_movGiroProhibido = 1;
 								break; //sale del for o del case??
