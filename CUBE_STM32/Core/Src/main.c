@@ -32,6 +32,7 @@
 #include "74_HC595_SPI_lfs.h"
 #include "botones_lfs.h"
 #include "menu_cubo.h"
+#include "blockOut.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -136,6 +137,10 @@ uint8_t loading;
 //variables controles
 uint8_t flag_tim3; //cada 10 ms.
 uint8_t antiRebote = 1;
+
+//variables aurt
+uint8_t rxChar;
+uint8_t flag_uart = 0;
 
 //variables planeBoing()
 uint8_t planePosition = 0;
@@ -260,6 +265,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2); // frecuencia de refresco
   HAL_TIM_Base_Start_IT(&htim3); // sincronizmo (10 * ms)
 
+  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
+
   start_menu();
   /* USER CODE END 2 */
 
@@ -278,6 +285,11 @@ int main(void)
 
 			  antiRebote = 1;
 		  } //end if antiRebote
+
+		  if (flag_uart != 0){
+			  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
+			  flag_uart = 0;
+		  } //end if flag_uart
 
 		  flag_tim3 = 0;
 	  } //end if flag_tim3
@@ -955,6 +967,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim->Instance == TIM3){
 		flag_tim3 = 1;
 	}
+}
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	flag_uart = 1;
 }
 /* USER CODE END 4 */
 
