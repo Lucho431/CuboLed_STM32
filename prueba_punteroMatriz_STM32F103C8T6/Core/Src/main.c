@@ -75,7 +75,7 @@ typedef struct t_pieza{
 
 /* USER CODE BEGIN PV */
 uint8_t flag_uart = 0;
-char texto[50];
+char texto[100];
 int16_t txtLenght;
 uint8_t index_texto = 0;
 uint8_t rx[3];
@@ -97,6 +97,9 @@ uint8_t completaPiso = 0; //cuando llega a 8, es un piso lleno.
 uint8_t ocupacion[8][8]= {{0}};
 
 T_PIEZA piezaActiva;
+
+//variables externas (no externalizadas en este proyecto)
+uint8_t cube[8][8];
 
 /*
 //matrices para las piezas
@@ -263,6 +266,14 @@ int main(void)
   {
 	  if (flag_uart != 0){
 
+		  for (uint8_t j = 0; j < 8; j++){
+			  for (uint8_t k = 0; k < 8; k++){
+				  //ocupacion[j][k] =0; //en el init del juego
+				  //ocupacion[j][k] = '-'; //solo aplica para las pruebas por uart
+				  cube[j][k] = 0; //solo aplica para las pruebas por uart
+			  } //end for k
+		  } //end for j
+
 		  index_pieza = rx[0] - '0';
 		  rx_j = rx[1] - '0';
 		  rx_k = rx[2] - '0';
@@ -280,6 +291,30 @@ int main(void)
 			  } //end for k
 		  } //end for j
 
+		  //posicion inicial de la pieza (desde la esquina 0,0,0 de la pieza)
+//		  pos_piezaX = (8 - pieza[index_pieza].lado) >> 1;
+//		  pos_piezaY = (8 - pieza[index_pieza].lado) >> 1;
+		  pos_piezaZ = 6;
+
+//		  pos_piezaX = 0;
+//		  pos_piezaY = 0;
+		  pos_piezaX = 8 - pieza[index_pieza].lado;
+		  pos_piezaY = 8 - pieza[index_pieza].lado;
+
+		  //ubico la pieza dentro del cubo (solo para la prueba por uart)
+		  for (int8_t i = 0; i < pieza[index_pieza].lado; i++ ){
+			  for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
+				  for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+					  if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
+						  cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
+					  }else{
+						  cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX));
+					  } //end if (pieza[index_pieza]...
+				  } //end for z
+			  } //end for y
+		  } //end for x
+
+/*
 		  //giro eje Z
 		  // NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
 		  for (int8_t k = 0; k < pieza[index_pieza].lado; k++ ){
@@ -296,6 +331,38 @@ int main(void)
 			  } //end for y
 		  } //end for z
 
+		  //giro eje x
+		  // NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
+		  for (int8_t i = 0; i < pieza[index_pieza].lado; i++ ){
+			  for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
+				  for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+
+					  if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
+						  pieza[index_pieza].matrizAux[pieza[index_pieza].lado - 1 - k][j] |= (0b1 << i);
+					  }else{
+						  pieza[index_pieza].matrizAux[pieza[index_pieza].lado - 1 - k][j] &= ~(0b1 << i); //nunca use esta expresion para setear ceros.
+					  } //end if (pieza[index_pieza]->matriz[j][k] & (0b1 << i) )
+
+				  } //end for x
+			  } //end for y
+		  } //end for z
+
+		  //giro eje y
+		  // NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
+		  for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
+			  for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+				  for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
+
+					  if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
+						  pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - 1 - i] |= (0b1 << k );
+					  }else{
+						  pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - 1 - i] &= ~(0b1 << k ); //nunca use esta expresion para setear ceros.
+					  } //end if (pieza[index_pieza].matriz[j][k] & (0b1 << i) )
+
+				  } //end for x
+			  } //end for y
+		  } //end for z
+
 		  //reasigno matrices
 		  for (int8_t k = 0; k < pieza[index_pieza].lado; k++ ){
 			  for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
@@ -303,12 +370,30 @@ int main(void)
 			  } //fin for j
 		  } //fin for k
 
-		  //dibuja pieza
-
+		  //dibuja pieza (sola, fuera del cubo)
 		  index_texto = 0;
 		  for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
 			  for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
-				  if (pieza[index_pieza].matriz[j][1] & (0b1 << i) ){
+				  if (pieza[index_pieza].matriz[j][i] & (0b1 << rx_j) ){
+					  texto[index_texto] = '@';
+				  }else{
+					  texto[index_texto] = '_';
+				  } //fin if
+				  index_texto++;
+			  } //fin for i
+			  texto[index_texto] = '\n';
+			  index_texto++;
+		  } //fin for j
+
+		  texto[index_texto] = '\n';
+		  index_texto++;
+*/
+
+		  //dibuja capa del cubo (con pieza si se encuentra)
+		  index_texto = 0;
+		  for (int8_t j = 0; j < 8; j++){
+			  for (int8_t i = 0; i < 8; i++){
+				  if (cube[j][rx_k] & (0b1 << i) ){
 					  texto[index_texto] = '@';
 				  }else{
 					  texto[index_texto] = '_';
