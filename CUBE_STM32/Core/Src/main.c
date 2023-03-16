@@ -141,6 +141,7 @@ uint8_t antiRebote = 1;
 //variables aurt
 uint8_t rxChar;
 uint8_t flag_uart = 0;
+extern char entradaJoystick;
 
 //variables planeBoing()
 uint8_t planePosition = 0;
@@ -287,6 +288,8 @@ int main(void)
 		  } //end if antiRebote
 
 		  if (flag_uart != 0){
+
+			  entradaJoystick = (char)rxChar;
 			  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
 			  flag_uart = 0;
 		  } //end if flag_uart

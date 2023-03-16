@@ -25,6 +25,7 @@ T_PIEZA piezaActiva;
 
 //variables externas
 extern uint8_t cube[8][8];
+/*
 //matrices para las piezas
 uint8_t m_pieza8[2][2];
 uint8_t m_pieza27[3][3];
@@ -32,6 +33,14 @@ uint8_t m_pieza64[4][4];
 uint8_t m_aux8[2][2];
 uint8_t m_aux27[3][3];
 uint8_t m_aux64[4][4];
+*/
+//punteros para las matrices de piezas
+uint8_t** m_pieza8;
+uint8_t** m_pieza27;
+uint8_t** m_pieza64;
+uint8_t** m_aux8;
+uint8_t** m_aux27;
+uint8_t** m_aux64;
 //dibujos de las piezas
 uint8_t dib_linea2[2]= {2,2};
 uint8_t dib_linea3[3]= {2,2,2};
@@ -44,6 +53,7 @@ uint8_t dib_cuad[2] = {3,3};
 uint8_t dib_u[3] = {5,7};
 uint8_t dib_s_2[3] = {3,2,6};
 
+/*
 T_PIEZA pieza [SIZE_TIPO_PIEZA] = {
 												{PUNTO, 1, NULL, NULL, NULL},
 												{LINEA_2, 2, (uint8_t**)m_pieza8, (uint8_t**)m_aux8, (uint8_t*)dib_linea2},
@@ -56,6 +66,20 @@ T_PIEZA pieza [SIZE_TIPO_PIEZA] = {
 												{CUADRADO, 2, (uint8_t**)m_pieza8, (uint8_t**)m_aux8, (uint8_t*)dib_cuad},
 												{PIEZA_U, 3, (uint8_t**)m_pieza27, (uint8_t**)m_aux27, (uint8_t*)dib_u},
 												{PIEZA_S_GRANDE, 3, (uint8_t**)m_pieza27, (uint8_t**)m_aux27, (uint8_t*)dib_s_2},
+};
+*/
+T_PIEZA pieza [SIZE_TIPO_PIEZA] = {
+												{PUNTO, 1, NULL, NULL, NULL},
+												{LINEA_2, 2, NULL, NULL, (uint8_t*)dib_linea2},
+												{LINEA_3, 3, NULL, NULL, (uint8_t*)dib_linea3},
+												{LINEA_4, 4, NULL, NULL, (uint8_t*)dib_linea4},
+												{PIEZA_T, 3, NULL, NULL, (uint8_t*)dib_t},
+												{PIEZA_S, 3, NULL, NULL, (uint8_t*)dib_s},
+												{PIEZA_L, 3, NULL, NULL, (uint8_t*)dib_l},
+												{ESQUINA, 2, NULL, NULL, (uint8_t*)dib_esq},
+												{CUADRADO, 2, NULL, NULL, (uint8_t*)dib_cuad},
+												{PIEZA_U, 3, NULL, NULL, (uint8_t*)dib_u},
+												{PIEZA_S_GRANDE, 3, NULL, NULL, (uint8_t*)dib_s_2},
 };
 
 void runBlockOut (void){
@@ -72,6 +96,58 @@ void runBlockOut (void){
 		break;
 		case ARRANCA_JUEGO:
 			//tareas de inicialización
+			//creacion de las matrices:
+			m_pieza8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
+			for (int8_t i=0; i < 2; i++)
+				m_pieza8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+
+			m_pieza27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
+			for (int8_t i=0; i < 3; i++)
+				m_pieza27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+
+			m_pieza64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
+			for (int8_t i=0; i < 4; i++)
+				m_pieza64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+
+			m_aux8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
+			for (int8_t i=0; i < 2; i++)
+				m_aux8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+
+			m_aux27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
+			for (int8_t i=0; i < 3; i++)
+				m_aux27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+
+			m_aux64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
+			for (int8_t i=0; i < 4; i++)
+				m_aux64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+			
+			//asignacion de matrices
+			for (uint8_t i = 0; i < SIZE_TIPO_PIEZA; i++){
+				switch (pieza[i].nombre){
+					case LINEA_2:
+					case ESQUINA:
+					case CUADRADO:
+						pieza[i].matriz = m_pieza8;
+						pieza[i].matrizAux = m_aux8;
+					break;
+					case LINEA_3:
+					case PIEZA_T:
+					case PIEZA_S:
+					case PIEZA_L:
+					case PIEZA_U:
+					case PIEZA_S_GRANDE:
+						pieza[i].matriz = m_pieza27;
+						pieza[i].matrizAux = m_aux27;
+					break;
+					case LINEA_4:
+						pieza[i].matriz = m_pieza64;
+						pieza[i].matrizAux = m_aux64;
+					break;
+					default:
+					break;
+				} //fin switch pieza[i].nombre
+			} //fin for i
+			
 			estatus_juego = CHECK_PIEZA;
 		break;
 		case CHECK_PIEZA:
@@ -97,7 +173,7 @@ void runBlockOut (void){
 							if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 								cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 							}else{
-								cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX));
+								cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX));
 							} //end if (pieza[index_pieza]...
 						} //end for z
 					} //end for y
@@ -147,7 +223,7 @@ void runBlockOut (void){
 									if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 										cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 									}else{
-										cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX));
+										cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX));
 									} //end if (pieza[index_pieza]...
 								} //end for z
 							} //end for y
@@ -179,7 +255,7 @@ void runBlockOut (void){
 									if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 										cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 									}else{
-										cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+										cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 									} //end if (pieza[index_pieza]...
 								} //end for z
 							} //end for y
@@ -211,7 +287,7 @@ void runBlockOut (void){
 									if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 										cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 									}else{
-										cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+										cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 									} //end if (pieza[index_pieza]...
 								} //end for z
 							} //end for y
@@ -243,7 +319,7 @@ void runBlockOut (void){
 									if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 										cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 									}else{
-										cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+										cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 									} //end if (pieza[index_pieza]...
 								} //end for z
 							} //end for y
@@ -258,9 +334,9 @@ void runBlockOut (void){
 							for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
 
 								if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
-									pieza[index_pieza].matrizAux[i][k] |= (0b1 << (pieza[index_pieza].lado - j) );
+									pieza[index_pieza].matrizAux[i][k] |= (0b1 << (pieza[index_pieza].lado - 1 - j) );
 								}else{
-									pieza[index_pieza].matrizAux[i][k] ^= (0b1 << (pieza[index_pieza].lado - j) ); //nunca use esta expresion para setear ceros.
+									pieza[index_pieza].matrizAux[i][k] &= ~(0b1 << (pieza[index_pieza].lado - 1 - j) ); //nunca use esta expresion para setear ceros.
 								} //end if (pieza[index_pieza].matriz[j][k] & (0b1 << i) )
 
 							} //end for x
@@ -291,7 +367,7 @@ void runBlockOut (void){
 								if (pieza[index_pieza].matrizAux[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
-									cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+									cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 								} //end if (pieza[index_pieza]...
 							} //end for z
 						} //end for y
@@ -305,9 +381,9 @@ void runBlockOut (void){
 							for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
 
 								if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
-									pieza[index_pieza].matrizAux[pieza[index_pieza].lado - k][j] |= (0b1 << i);
+									pieza[index_pieza].matrizAux[pieza[index_pieza].lado - 1 - k][j] |= (0b1 << i);
 								}else{
-									pieza[index_pieza].matrizAux[pieza[index_pieza].lado - k][j] ^= (0b1 << i); //nunca use esta expresion para setear ceros.
+									pieza[index_pieza].matrizAux[pieza[index_pieza].lado - 1 - k][j] &= ~(0b1 << i); //nunca use esta expresion para setear ceros.
 								} //end if (pieza[index_pieza].matriz[j][k] & (0b1 << i) )
 
 							} //end for x
@@ -338,7 +414,7 @@ void runBlockOut (void){
 								if (pieza[index_pieza].matrizAux[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
-									cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+									cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 								} //end if (pieza[index_pieza]...
 							} //end for z
 						} //end for y
@@ -351,9 +427,9 @@ void runBlockOut (void){
 							for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
 
 								if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
-									pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - i] |= (0b1 << (pieza[index_pieza].lado - k) );
+									pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - 1 - i] |= (0b1 << (pieza[index_pieza].lado - k) );
 								}else{
-									pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - i] ^= (0b1 << (pieza[index_pieza].lado - k) ); //nunca use esta expresion para setear ceros.
+									pieza[index_pieza].matrizAux[j][pieza[index_pieza].lado - 1 - i] &= ~(0b1 << (pieza[index_pieza].lado - k) ); //nunca use esta expresion para setear ceros.
 								} //end if (pieza[index_pieza].matriz[j][k] & (0b1 << i) )
 
 							} //end for x
@@ -384,7 +460,7 @@ void runBlockOut (void){
 								if (pieza[index_pieza].matrizAux[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
-									cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+									cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 								} //end if (pieza[index_pieza]...
 							} //end for z
 						} //end for y
@@ -447,7 +523,7 @@ void runBlockOut (void){
 								if (pieza[index_pieza].matriz[j][k] & (0b1 << i) ){
 									cube[j + pos_piezaY][k + pos_piezaZ] |= (0x01 << (i + pos_piezaX) );
 								}else{
-									cube[j + pos_piezaY][k + pos_piezaZ] ^= (0x01 << (i + pos_piezaX) );
+									cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 								} //end if (pieza[index_pieza]...
 							} //end for z
 						} //end for y
