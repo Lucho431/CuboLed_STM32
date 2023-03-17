@@ -10,6 +10,8 @@
 
 #include "stm32f1xx_hal.h"
 #include "botones_lfs.h"
+#include "ssd1306.h"
+#include "fonts.h"
 
 typedef struct t_menu {
 	int8_t nombre;
@@ -19,6 +21,7 @@ typedef struct t_menu {
 } T_MENU;
 
 typedef enum{
+	MENU_OFF,
 	MENU_PRINCIPAL,
 	MENU_ELIGE_EFECTO,
 	MENU_ADC,

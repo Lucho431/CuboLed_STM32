@@ -137,11 +137,13 @@ uint8_t loading;
 //variables controles
 uint8_t flag_tim3; //cada 10 ms.
 uint8_t antiRebote = 1;
+uint16_t periodo_blockOut = 500; // * 10 ms.
 
 //variables aurt
 uint8_t rxChar;
 uint8_t flag_uart = 0;
 extern char entradaJoystick;
+extern uint8_t flag_timeoutCaer;
 
 //variables planeBoing()
 uint8_t planePosition = 0;
@@ -293,6 +295,13 @@ int main(void)
 			  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
 			  flag_uart = 0;
 		  } //end if flag_uart
+
+		  if (periodo_blockOut != 0){
+			  periodo_blockOut--;
+		  }else{
+			  periodo_blockOut = 0;
+			  flag_timeoutCaer = 1;
+		  } //end if periodo_blockout
 
 		  flag_tim3 = 0;
 	  } //end if flag_tim3
