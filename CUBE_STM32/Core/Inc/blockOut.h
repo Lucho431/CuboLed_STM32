@@ -45,5 +45,5 @@ typedef struct t_pieza{
 
 
 void runBlockOut (void);
-
+void testBlockOut (void);
 #endif /* INC_BLOCKOUT_H_ */

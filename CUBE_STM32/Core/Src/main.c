@@ -270,7 +270,7 @@ int main(void)
 
   HAL_UART_Receive_IT(&huart1, &rxChar, 1);
 
-  start_menu();
+//  start_menu();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -278,7 +278,7 @@ int main(void)
   while (1)
   {
 	  update_teclas();
-	  check_menu();
+//	  check_menu();
 
 	  if (flag_tim3 != 0){
 		  if (antiRebote != 0){ //para leer cada 20 ms.
@@ -360,6 +360,8 @@ int main(void)
 
 //	  drawCube(0, 0, 0, 8);
 //	  fireWork();
+//	  testBlockOut();
+//	  runBlockOut();
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
