@@ -6,7 +6,6 @@
  */
 
 #include "blockOut.h"
-#include "stdlib.h"
 
 //variables del juego
 uint8_t flag_pieza = 0; // indica si hay una pieza viva
@@ -28,7 +27,6 @@ T_PIEZA piezaActiva;
 
 //variables externas
 extern uint8_t cube[8][8];
-extern uint64_t randomTimer;
 /*
 //matrices para las piezas
 uint8_t m_pieza8[2][2];
@@ -173,9 +171,8 @@ void runBlockOut (void){
 		break;
 		case CHECK_PIEZA:
 			if (!flag_pieza){ //si no hay pieza...
-				srand(randomTimer);
-				index_pieza = 1 + (rand() % PIEZA_S_GRANDE);
-//				index_pieza = 4;
+				index_pieza = rand() % SIZE_TIPO_PIEZA;
+				index_pieza = 4;
 				// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
 
 				//crea la pieza
@@ -183,7 +180,7 @@ void runBlockOut (void){
 					for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
 
 						if (k == 1){
-							pieza[index_pieza].matriz[k][j] = pieza[index_pieza].dibujo[j];
+							pieza[index_pieza].matriz[k][j] = pieza[index_pieza].dibujo[k];
 						}else{
 							pieza[index_pieza].matriz[k][j] = 0;
 						}
@@ -734,7 +731,7 @@ void runBlockOut (void){
 					//llena la matriz de ocupacion
 					for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
 						for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
-							ocupacion[k + pos_piezaZ][j + pos_piezaY] |= ( pieza[index_pieza].matriz[k][j] << pos_piezaX);
+							ocupacion[k + pos_piezaZ][j + pos_piezaY] |= pieza[index_pieza].matriz[k][j];
 						} //end for z
 					} //end for x
 
@@ -800,7 +797,7 @@ void runBlockOut (void){
 			for (uint8_t k = 0; k < 8; k++){
 				for (uint8_t j = 0; j < 8; j++){
 					if (ocupacion[k][j] & (0b1 << i) ){
-						cube[7 - k][j] |= (0x01 << i );
+						cube[k][j] |= (0x01 << i );
 					} //end if ocupacion...
 				} //end for j
 			} //end for ja
@@ -813,7 +810,7 @@ void runBlockOut (void){
 					//pieza[index_pieza].matriz[ka][j] = pieza[index_pieza].matrizAux[ka][j];
 					for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
 						if (pieza[index_pieza].matriz[k][j] & (0b1 << i) ){
-							cube[7 - k - pos_piezaZ][j + pos_piezaY] |= (0x01 << (i + pos_piezaX) );
+							cube[k + pos_piezaZ][j + pos_piezaY] |= (0x01 << (i + pos_piezaX) );
 						}else{
 							//cube[j + pos_piezaY][k + pos_piezaZ] &= ~(0x01 << (i + pos_piezaX) );
 						} //end if (pieza[index_pieza]...

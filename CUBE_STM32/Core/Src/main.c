@@ -137,7 +137,7 @@ uint8_t loading;
 //variables controles
 uint8_t flag_tim3; //cada 10 ms.
 uint8_t antiRebote = 1;
-uint16_t periodo_blockOut = 500; // * 10 ms.
+uint16_t periodo_blockOut = 300; // * 10 ms.
 
 //variables aurt
 uint8_t rxChar;
@@ -299,7 +299,7 @@ int main(void)
 		  if (periodo_blockOut != 0){
 			  periodo_blockOut--;
 		  }else{
-			  periodo_blockOut = 0;
+			  periodo_blockOut = 150;
 			  flag_timeoutCaer = 1;
 		  } //end if periodo_blockout
 
@@ -344,7 +344,7 @@ int main(void)
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
 	  } //end if getStatBoton...
 
-
+/*
 	  switch (currentEffect) {
 		  case RAIN: rain(); break;
 		  case PLANE_BOING: planeBoing(); break;
@@ -357,11 +357,12 @@ int main(void)
 		  case LIT: lit(); break;
 		  default: cubeJump();
 	  } //end switch currentEffect
-
+*/
 //	  drawCube(0, 0, 0, 8);
 //	  fireWork();
 //	  testBlockOut();
-//	  runBlockOut();
+//	  lightCube();
+	  runBlockOut();
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
