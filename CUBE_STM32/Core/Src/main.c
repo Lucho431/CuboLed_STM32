@@ -206,6 +206,10 @@ T_FW_PARTICLE particle[40];
 uint8_t deadParticles = 0;
 uint8_t explocionCicle = 2;
 
+//variables demo()
+uint16_t periodo_demo;
+T_EFFECT index_demo = TEXT;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -228,6 +232,7 @@ void cubeJump(void);
 void fireWork(void);
 void glow(void);
 void text(char[], uint8_t);
+void demo(void);
 void lit(void);
 void lightCube(void);
 /* USER CODE END PFP */
@@ -323,6 +328,11 @@ int main(void)
 			  periodo_blockOut = 150;
 			  flag_timeoutCaer = 1;
 		  } //end if periodo_blockout
+
+		  if (periodo_demo != 0){
+			  periodo_demo--;
+		  } //end if periodo_demo
+
 
 		  flag_tim3 = 0;
 	  } //end if flag_tim3
@@ -912,6 +922,37 @@ void cubeJump() {
     }
   }
 } //end cubeJump()
+
+void demo(void){
+	if (!periodo_demo){
+		switch (index_demo) {
+			case RAIN: index_demo = PLANE_BOING; break;
+			case PLANE_BOING: index_demo = SEND_VOXELS; break;
+			case SEND_VOXELS: index_demo = WOOP_WOOP; break;
+			case WOOP_WOOP: index_demo = CUBE_JUMP; break;
+			case CUBE_JUMP: index_demo = FIREWORKS; break;
+			case FIREWORKS: index_demo = GLOW; break;
+			case GLOW: index_demo = TEXT; break;
+			case TEXT: index_demo = RAIN; break;
+			default: index_demo = TEXT;
+		}
+
+		periodo_demo = 700;
+	} //end if !periodo_demo
+
+	switch (index_demo) {
+		case RAIN: rain(); break;
+		case PLANE_BOING: planeBoing(); break;
+		case SEND_VOXELS: sendVoxels(); break;
+		case WOOP_WOOP: woopWoop(); break;
+		case CUBE_JUMP: cubeJump(); break;
+		case FIREWORKS: fireWork(); break;
+		case GLOW: glow(); break;
+		case TEXT: text("DEMO", 4); break;
+		default: break;
+	} //end switch index_demo
+
+} //end demo()
 
 
 void setVoxel(uint8_t x, uint8_t y, uint8_t z) {
