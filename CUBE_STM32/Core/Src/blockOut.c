@@ -94,7 +94,7 @@ void runBlockOut (void){
 //		} //end for j
 //	} //end for ja
 
-	entradaJoystick = 0;
+//	entradaJoystick = 0;
 
 	switch(estatus_juego){
 		case JUEGO_IDLE:
@@ -451,7 +451,7 @@ void runBlockOut (void){
 					flag_movGiroProhibido = 0;
 					for (int8_t i = 0; i < pieza[index_pieza].lado; i++ ){
 						for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
-							for (int8_t j = 0; j < pieza[index_pieza].lado; k++){
+							for (int8_t j = 0; j < pieza[index_pieza].lado; j++){
 								if (pieza[index_pieza].matrizAux[k][j] & (0b1 << i) ){
 									if ( (i + pos_piezaX < 0) || (i + pos_piezaX > 7)  ){
 										//anula el movimiento
@@ -580,9 +580,9 @@ void runBlockOut (void){
 							for (int8_t i = 0; i < pieza[index_pieza].lado; i++){
 
 								if (pieza[index_pieza].matriz[k][j] & (0b1 << i) ){
-									pieza[index_pieza].matrizAux[k][pieza[index_pieza].lado - 1 - i] |= (0b1 << (pieza[index_pieza].lado - j) );
+									pieza[index_pieza].matrizAux[k][i] |= (0b1 << (pieza[index_pieza].lado - 1 - j) );
 								}else{
-									pieza[index_pieza].matrizAux[k][pieza[index_pieza].lado - 1 - i] &= ~(0b1 << (pieza[index_pieza].lado - j) ); //nunca use esta expresion para setear ceros.
+									pieza[index_pieza].matrizAux[k][i] &= ~(0b1 << (pieza[index_pieza].lado - 1 - j) ); //nunca use esta expresion para setear ceros.
 								} //end if (pieza[index_pieza].matriz[ka][j] & (0b1 << i) )
 
 							} //end for x
@@ -745,6 +745,7 @@ void runBlockOut (void){
 			} //end if flag_timeoutCaer != 0
 
 			estatus_juego = CHECK_PISO_LLENO;
+//			estatus_juego = CHECK_PIEZA;
 		break;
 		case CHECK_PISO_LLENO:
 			completaPiso = 0;
