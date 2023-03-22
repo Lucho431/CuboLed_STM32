@@ -54,6 +54,7 @@ typedef enum{
 	CUBE_JUMP,
 	FIREWORKS,
 	GLOW,
+	BLOCKOUT,
 	TEXT,
 	LIT,
 	TOTAL_EFFECTS,
@@ -106,7 +107,20 @@ typedef struct{
 /* USER CODE BEGIN PV */
 
 //caracteres
-uint8_t characters[10][8] = {
+//uint8_t characters[10][8] = {
+//  {0x3C, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x3C}, //0
+//  {0x10, 0x18, 0x14, 0x10, 0x10, 0x10, 0x10, 0x3C}, //1
+//  {0x3C, 0x42, 0x40, 0x40, 0x3C, 0x02, 0x02, 0x7E}, //2
+//  {0x3C, 0x40, 0x40, 0x3C, 0x40, 0x40, 0x42, 0x3C}, //3
+//  {0x22, 0x22, 0x22, 0x22, 0x7E, 0x20, 0x20, 0x20}, //4
+//  {0x7E, 0x02, 0x02, 0x3E, 0x40, 0x40, 0x42, 0x3C}, //5
+//  {0x3C, 0x02, 0x02, 0x3E, 0x42, 0x42, 0x42, 0x3C}, //6
+//  {0x3C, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40}, //7
+//  {0x3C, 0x42, 0x42, 0x3C, 0x42, 0x42, 0x42, 0x3C}, //8
+//  {0x3C, 0x42, 0x42, 0x42, 0x3C, 0x40, 0x40, 0x3C}, //9
+//};
+
+uint8_t characters[13][8] = {
   {0x3C, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x3C}, //0
   {0x10, 0x18, 0x14, 0x10, 0x10, 0x10, 0x10, 0x3C}, //1
   {0x3C, 0x42, 0x40, 0x40, 0x3C, 0x02, 0x02, 0x7E}, //2
@@ -117,6 +131,9 @@ uint8_t characters[10][8] = {
   {0x3C, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40}, //7
   {0x3C, 0x42, 0x42, 0x3C, 0x42, 0x42, 0x42, 0x3C}, //8
   {0x3C, 0x42, 0x42, 0x42, 0x3C, 0x40, 0x40, 0x3C}, //9
+  {0x0E, 0x12, 0x22, 0x42, 0x42, 0x22, 0x12, 0x0E}, //D (pos 10)
+  {0x3C, 0x04, 0x04, 0x1C, 0x04, 0x04, 0x04, 0x3C}, //E (pos 11)
+  {0x82, 0xC6, 0xAA, 0x92, 0x82, 0x82, 0x82, 0x82}, //M (pos 12)
 };
 
 //variables cubo
@@ -142,8 +159,11 @@ uint16_t periodo_blockOut = 300; // * 10 ms.
 //variables aurt
 uint8_t rxChar;
 uint8_t flag_uart = 0;
+
+//variables blockOut (externas)
 extern char entradaJoystick;
 extern uint8_t flag_timeoutCaer;
+extern T_ESTATUS_JUEGO estatus_juego;
 
 //variables planeBoing()
 uint8_t planePosition = 0;
@@ -173,6 +193,7 @@ uint16_t glowCount = 0;
 //variables text()
 uint8_t charCounter = 0;
 uint8_t charPosition = 0;
+uint8_t charSelection = 0;
 
 //variables fireWork()
 uint8_t exploded;
@@ -323,6 +344,8 @@ int main(void)
 		  HAL_Delay(500);
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+
+		  estatus_juego = JUEGO_IDLE; //resetea blockOut
 	  } //end if getStatBoton...
 
 	  if (getStatBoton(IN_DOWN) == FALL){ //DOWN
@@ -342,9 +365,11 @@ int main(void)
 		  HAL_Delay(500);
 		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
 		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+
+		  estatus_juego = JUEGO_IDLE; //resetea blockOut
 	  } //end if getStatBoton...
 
-/*
+
 	  switch (currentEffect) {
 		  case RAIN: rain(); break;
 		  case PLANE_BOING: planeBoing(); break;
@@ -353,16 +378,17 @@ int main(void)
 		  case CUBE_JUMP: cubeJump(); break;
 		  case FIREWORKS: fireWork(); break;
 		  case GLOW: glow(); break;
-		  case TEXT: text("0123456789", 10); break;
+		  case BLOCKOUT: runBlockOut(); break;
+		  case TEXT: text("DEMO0123456789", 14); break;
 		  case LIT: lit(); break;
 		  default: cubeJump();
 	  } //end switch currentEffect
-*/
+
 //	  drawCube(0, 0, 0, 8);
 //	  fireWork();
 //	  testBlockOut();
 //	  lightCube();
-	  runBlockOut();
+//	  runBlockOut();
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
@@ -640,33 +666,69 @@ void glow() {
 } //end glow()
 
 void text(char string[], uint8_t len) {
-  if (loading) {
-    clearCube();
-    charPosition = -1;
-    charCounter = 0;
-    loading = 0;
-  }
-  timer++;
-  if (timer > TEXT_TIME) {
-    timer = 0;
+	if (loading) {
+		clearCube();
+		charPosition = -1;
+		charCounter = 0;
+		loading = 0;
+	}
+	timer++;
+	if (timer > TEXT_TIME) {
+		timer = 0;
 
-    shift(NEG_Z);
-    charPosition++;
+		shift(NEG_Z);
+		charPosition++;
 
-    if (charPosition == 7) {
-      charCounter++;
-      if (charCounter > len - 1) {
-        charCounter = 0;
-      }
-      charPosition = 0;
-    }
+		if (charPosition == 7) {
+			charCounter++;
+			if (charCounter > len - 1) {
+				charCounter = 0;
+			}
+			charPosition = 0;
+		}
 
-    if (charPosition == 0) {
-      for (uint8_t i = 0; i < 8; i++) {
-        cube[i][0] = characters[string[charCounter] - '0'][i];
-      }
-    }
-  }
+		if (charPosition == 0) {
+
+			//charSelection = string[charCounter] - '0';
+			switch(string[charCounter]){
+				case 'D':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[10][i];
+					} //end for
+				break;
+				case 'E':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[11][i];
+					} //end for
+				break;
+				case 'M':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[12][i];
+					} //end for
+				break;
+				case 'O':
+				case '0':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[0][i];
+					} //end for
+				break;
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[string[charCounter] - '0'][i];
+					} //end for
+				default:
+				break;
+			} //end switch
+		} //end if charPosition
+	}
 } //end text()
 
 void fireWork (void){

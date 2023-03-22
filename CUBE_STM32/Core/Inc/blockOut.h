@@ -41,6 +41,7 @@ typedef struct t_pieza{
 	uint8_t** matriz; //puntero a la matriz correspondiente.
 	uint8_t** matrizAux; //puntero a la matriz auxiliar correspondiente.
 	uint8_t* dibujo; //puntero al dibujo de la pieza
+	uint8_t mask; //mascara para filtrar los bits pertenecientes a laa matriz
 }T_PIEZA;
 
 
