@@ -1,1 +1,8 @@
 la frecuencia de refresco es de 375000 (24 cuadros x segundo, dividido 8)
+
+
+blockOut:
+1) no restaura flag_gameOver, por eso no dura más de una pieza tras perder
+2) en la linea 205, hay un valor de index_pieza = 4 hardcodeado. ¿esto no es incorrecto? ¿afecta al juego?
+3) pos_piezaX puede tomar valores negativos, y se usa para shiftear cuando lleno la matriz de ocupacion
+4)pos_piezaZ y pos_piezaY tambien toman valores negativos. Comprobar qué pasa en la matriz de ocupacion
