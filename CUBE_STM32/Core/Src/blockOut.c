@@ -42,12 +42,12 @@ uint8_t m_aux27[3][3];
 uint8_t m_aux64[4][4];
 */
 //punteros para las matrices de piezas
-uint8_t** m_pieza8;
-uint8_t** m_pieza27;
-uint8_t** m_pieza64;
-uint8_t** m_aux8;
-uint8_t** m_aux27;
-uint8_t** m_aux64;
+uint8_t** m_pieza8 = 0;
+uint8_t** m_pieza27 = 0;
+uint8_t** m_pieza64 = 0;
+uint8_t** m_aux8 = 0;
+uint8_t** m_aux27 = 0;
+uint8_t** m_aux64 = 0;
 //dibujos de las piezas
 uint8_t dib_linea2[2]= {2,2};
 uint8_t dib_linea3[3]= {2,2,2};
@@ -121,29 +121,41 @@ void runBlockOut (void){
 			} //end for k
 
 			//creacion de las matrices:
-			m_pieza8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
-			for (int8_t i=0; i < 2; i++)
-				m_pieza8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+			if (!m_pieza8){
+				m_pieza8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
+				for (int8_t i=0; i < 2; i++)
+					m_pieza8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+			}
 
-			m_pieza27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
-			for (int8_t i=0; i < 3; i++)
-				m_pieza27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+			if (!m_pieza27){
+				m_pieza27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
+				for (int8_t i=0; i < 3; i++)
+					m_pieza27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+			}
 
-			m_pieza64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
-			for (int8_t i=0; i < 4; i++)
-				m_pieza64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+			if (!m_pieza64){
+				m_pieza64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
+				for (int8_t i=0; i < 4; i++)
+					m_pieza64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+			}
 
-			m_aux8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
-			for (int8_t i=0; i < 2; i++)
-				m_aux8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+			if (!m_aux8){
+				m_aux8 = (uint8_t **)malloc (2*sizeof(uint8_t *));
+				for (int8_t i=0; i < 2; i++)
+					m_aux8[i] = (uint8_t *) malloc (2*sizeof(uint8_t));
+			}
 
-			m_aux27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
-			for (int8_t i=0; i < 3; i++)
-				m_aux27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+			if (!m_aux27){
+				m_aux27 = (uint8_t **)malloc (3*sizeof(uint8_t *));
+				for (int8_t i=0; i < 3; i++)
+					m_aux27[i] = (uint8_t *) malloc (3*sizeof(uint8_t));
+			}
 
-			m_aux64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
-			for (int8_t i=0; i < 4; i++)
-				m_aux64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+			if (!m_aux64){
+				m_aux64 = (uint8_t **)malloc (4*sizeof(uint8_t *));
+				for (int8_t i=0; i < 4; i++)
+					m_aux64[i] = (uint8_t *) malloc (4*sizeof(uint8_t));
+			}
 			
 			//asignacion de matrices
 			for (uint8_t i = 0; i < SIZE_TIPO_PIEZA; i++){
@@ -174,6 +186,11 @@ void runBlockOut (void){
 			
 			for (uint8_t k = 0; k < 8; k++){
 				for (uint8_t j = 0; j < 8; j++){
+//					if (k == 0){
+//						ocupacion[k][j] =0xFE;
+//					}else{
+//						ocupacion[k][j] =0;
+//					}
 					ocupacion[k][j] = 0;
 				} //end for j
 			} //end for k
@@ -250,6 +267,8 @@ void runBlockOut (void){
 			if (flag_gameOver != 0){
 				flag_pieza = 0;
 				flag_updateJuego = 0;
+				flag_gameOver = 0;
+				entradaJoystick = 0;
 
 				//limpia el cubo
 				for (uint8_t k = 0; k < 8; k++){
@@ -597,7 +616,7 @@ void runBlockOut (void){
 					//re asigna la matriz
 					for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
 						for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
-							pieza[index_pieza].matriz[k][j] = pieza[index_pieza].matrizAux[k][j];
+							pieza[index_pieza].matriz[k][j] = ( pieza[index_pieza].matrizAux[k][j] & pieza[index_pieza].mask );
 						} //end for ja
 					} //end for j
 
@@ -766,11 +785,26 @@ void runBlockOut (void){
 					flag_pieza = 0;
 					flag_fuerzaCaida = 0;
 					//llena la matriz de ocupacion
-					for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
-						for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
-							ocupacion[k + pos_piezaZ][j + pos_piezaY] |= ( pieza[index_pieza].matriz[k][j] << pos_piezaX);
-						} //end for z
-					} //end for x
+					if (pos_piezaX >= 0){
+						for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
+							for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+								ocupacion[k + pos_piezaZ][j + pos_piezaY] |= ( pieza[index_pieza].matriz[k][j] << pos_piezaX);
+							} //end for z
+						} //end for x
+					}else{
+						for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
+							for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+								pieza[index_pieza].matriz[k][j] >>= 1; //porque pos_piezaX solo llega hasta -1
+								ocupacion[k + pos_piezaZ][j + pos_piezaY] |= ( pieza[index_pieza].matriz[k][j] );
+							} //end for z
+						} //end for x
+					} //end if pos_piezaX
+
+//					for (int8_t j = 0; j < pieza[index_pieza].lado; j++ ){
+//						for (int8_t k = 0; k < pieza[index_pieza].lado; k++){
+//							ocupacion[k + pos_piezaZ][j + pos_piezaY] |= ( pieza[index_pieza].matriz[k][j] << pos_piezaX);
+//						} //end for z
+//					} //end for x
 
 					flag_movGiroProhibido = 0;
 				} //end if (flag_movGiroProhibido != 0)
@@ -799,19 +833,16 @@ void runBlockOut (void){
 
 					 flag_updateJuego = 1;
 
-					 for (int8_t q = k; q < 8; q++){
+					 for (int8_t k = 0; k < 7; k++){
+						 for (int8_t j = 0; j < 8; j++){
+							 ocupacion[k][j] = ocupacion[k + 1][j];
+						 } //end for j
+					 } //end for k
 
-						 if (q == 7){ //llegue al piso 7
-							 for (int8_t j = 0; j < 8; j++){
-								 ocupacion[k][j] = 0;
-							 } //end for j
-						 }else{ //si no llegue al piso 7
-							for (int8_t j = 0; j < 8; j++){
-								 ocupacion[k][j] = ocupacion[k + 1][j];
-							 } //end for j
-						 } //end if q == 7
+					 for (int8_t j = 0; j < 8; j++){
+						 ocupacion[7][j] = 0;
+					 } //end for j
 
-					 } //end for q
 					 completaPiso = 0;
 				 } //end if (completaPiso == 8)
 			} //end for j

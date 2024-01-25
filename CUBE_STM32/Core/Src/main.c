@@ -47,7 +47,8 @@ typedef enum{
 }T_POS;
 
 typedef enum{
-	RAIN = 0,
+	NULL_EFECT = 0,
+	RAIN,
 	PLANE_BOING,
 	SEND_VOXELS,
 	WOOP_WOOP,
@@ -56,6 +57,7 @@ typedef enum{
 	GLOW,
 	BLOCKOUT,
 	TEXT,
+	DEMO,
 	LIT,
 	TOTAL_EFFECTS,
 }T_EFFECT;
@@ -86,15 +88,15 @@ typedef struct{
 #define YAXIS 1
 #define ZAXIS 2
 
-#define RAIN_TIME 0x8FFC
-#define PLANE_BOING_TIME 0x8FFC
-#define SEND_VOXELS_TIME 0x8FFC
-#define WOOP_WOOP_TIME 0x8FFC
-#define CUBE_JUMP_TIME 0x7FFF
-#define GLOW_TIME 0x8FFC
-#define TEXT_TIME 0x8FFC
-#define CLOCK_TIME 0x8FFC
-#define FIREWORK_TIME 0x5FFC
+//#define RAIN_TIME 0x8FFC
+//#define PLANE_BOING_TIME 0x8FFC
+//#define SEND_VOXELS_TIME 0x8FFC
+//#define WOOP_WOOP_TIME 0x8FFC
+//#define CUBE_JUMP_TIME 0x7FFF
+//#define GLOW_TIME 0x8FFC
+//#define TEXT_TIME 0x8FFC
+//#define CLOCK_TIME 0x8FFC
+//#define FIREWORK_TIME 0x5FFC
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -105,6 +107,18 @@ typedef struct{
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+//variables tiempo
+uint16_t RAIN_TIME = 0x4FFC;
+uint16_t PLANE_BOING_TIME = 0x4FFC;
+uint16_t SEND_VOXELS_TIME = 0x47FC;
+uint16_t WOOP_WOOP_TIME = 0x4FFC;
+uint16_t CUBE_JUMP_TIME = 0x470F;
+uint16_t GLOW_TIME = 0x8FFC;
+uint16_t TEXT_TIME = 0x6FFC;
+uint16_t CLOCK_TIME = 0x8FFC;
+uint16_t FIREWORK_TIME = 0x38EF;
+uint16_t STEP_TIME = 0X800;
 
 //caracteres
 //uint8_t characters[10][8] = {
@@ -208,7 +222,7 @@ uint8_t explocionCicle = 2;
 
 //variables demo()
 uint16_t periodo_demo;
-T_EFFECT index_demo = TEXT;
+T_EFFECT index_demo = GLOW;
 
 /* USER CODE END PV */
 
@@ -344,18 +358,37 @@ int main(void)
 		  loading = 1;
 		  timer = 0;
 		  currentEffect++;
-		  if (currentEffect == TOTAL_EFFECTS) {
-			  currentEffect = 0;
+		  if (currentEffect >= TOTAL_EFFECTS) {
+			  currentEffect = RAIN;
 		  }
 		  srand(randomTimer);
 		  randomTimer = 0;
-		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
-		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
-		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
-		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
+//		  HAL_Delay(500);
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
 
-		  estatus_juego = JUEGO_IDLE; //resetea blockOut
+		  switch (currentEffect) {
+			  case RAIN: break;
+			  case PLANE_BOING: break;
+			  case SEND_VOXELS: break;
+			  case WOOP_WOOP: break;
+			  case CUBE_JUMP: break;
+			  case FIREWORKS: break;
+			  case GLOW: break;
+			  case BLOCKOUT:
+				  estatus_juego = JUEGO_IDLE;
+			  break;
+			  case TEXT: break;
+			  case DEMO:
+				  index_demo = GLOW;
+				  periodo_demo = 0;
+			  break;
+			  case LIT: break;
+			  default: break;
+		  } //end switch currentEffect
+
 	  } //end if getStatBoton...
 
 	  if (getStatBoton(IN_DOWN) == FALL){ //DOWN
@@ -363,22 +396,164 @@ int main(void)
 		  loading = 1;
 		  timer = 0;
 		  currentEffect--;
-		  if (currentEffect != 0) {
-			  currentEffect--;
-		  }else{
+		  if (currentEffect == NULL_EFECT) {
 			  currentEffect = TOTAL_EFFECTS - 1;
 		  }
+
 		  srand(randomTimer);
 		  randomTimer = 0;
-		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
-		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
-		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
-		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
+//		  HAL_Delay(500);
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
 
-		  estatus_juego = JUEGO_IDLE; //resetea blockOut
+		  switch (currentEffect) {
+			  case RAIN: break;
+			  case PLANE_BOING: break;
+			  case SEND_VOXELS: break;
+			  case WOOP_WOOP: break;
+			  case CUBE_JUMP: break;
+			  case FIREWORKS: break;
+			  case GLOW: break;
+			  case BLOCKOUT:
+				  estatus_juego = JUEGO_IDLE;
+			  break;
+			  case TEXT: break;
+			  case DEMO:
+				  periodo_demo = 700;
+			  break;
+			  case LIT: break;
+			  default: break;
+		  } //end switch currentEffect
+
 	  } //end if getStatBoton...
 
+	  if (getStatBoton(IN_LEFT) == FALL){ //UP
+		  switch (currentEffect) {
+			  case RAIN:
+				  if (RAIN_TIME < (0xFFFE - STEP_TIME)){
+					  RAIN_TIME += STEP_TIME;
+				  }else{
+					  RAIN_TIME = 0xFFFF;
+				  }
+				  break;
+			  case PLANE_BOING:
+				  if (PLANE_BOING_TIME < (0xFFFE - STEP_TIME)){
+					  PLANE_BOING_TIME += STEP_TIME;
+				  }else{
+					  PLANE_BOING_TIME = 0xFFFF;
+				  }
+				  break;
+			  case SEND_VOXELS:
+				  if (SEND_VOXELS_TIME < (0xFFFE - STEP_TIME)){
+					  SEND_VOXELS_TIME += STEP_TIME;
+				  }else{
+					  SEND_VOXELS_TIME= 0xFFFF;
+				  }
+				  break;
+			  case WOOP_WOOP:
+				  if (WOOP_WOOP_TIME < (0xFFFE - STEP_TIME)){
+					  WOOP_WOOP_TIME+= STEP_TIME;
+				  }else{
+					  WOOP_WOOP_TIME= 0xFFFF;
+				  }
+				  break;
+			  case CUBE_JUMP:
+				  if (RAIN_TIME < (0xFFFE - STEP_TIME)){
+					  CUBE_JUMP_TIME += STEP_TIME;
+				  }else{
+					  CUBE_JUMP_TIME = 0xFFFF;
+				  }
+				  break;
+			  case FIREWORKS:
+				  if (FIREWORK_TIME < (0xFFFE - STEP_TIME)){
+					  FIREWORK_TIME += STEP_TIME;
+				  }else{
+					  FIREWORK_TIME = 0xFFFF;
+				  }
+				  break;
+			  case GLOW:
+				  if (GLOW_TIME < (0xFFFE - STEP_TIME)){
+					  GLOW_TIME+= STEP_TIME;
+				  }else{
+					  GLOW_TIME = 0xFFFF;
+				  }
+				  break;
+			  case TEXT:
+				  if (TEXT_TIME < (0xFFFE - STEP_TIME)){
+					  TEXT_TIME+= STEP_TIME;
+				  }else{
+					  TEXT_TIME= 0xFFFF;
+				  }
+				  break;
+			  default:
+				  break;
+		  } //end switch currentEffect
+	  }//end if getStatBoton...
+
+	  if (getStatBoton(IN_RIGHT) == FALL){ //UP
+		  switch (currentEffect) {
+			  case RAIN:
+				  if (RAIN_TIME > STEP_TIME + 0X1){
+					  RAIN_TIME -= STEP_TIME;
+				  }else{
+					  RAIN_TIME = STEP_TIME;
+				  }
+				  break;
+			  case PLANE_BOING:
+				  if (PLANE_BOING_TIME > STEP_TIME + 0X1){
+					  PLANE_BOING_TIME -= STEP_TIME;
+				  }else{
+					  PLANE_BOING_TIME = STEP_TIME;
+				  }
+				  break;
+			  case SEND_VOXELS:
+				  if (SEND_VOXELS_TIME > STEP_TIME + 0X1){
+					  SEND_VOXELS_TIME -= STEP_TIME;
+				  }else{
+					  SEND_VOXELS_TIME= STEP_TIME;
+				  }
+				  break;
+			  case WOOP_WOOP:
+				  if (WOOP_WOOP_TIME > STEP_TIME + 0X1){
+					  WOOP_WOOP_TIME-= STEP_TIME;
+				  }else{
+					  WOOP_WOOP_TIME= STEP_TIME;
+				  }
+				  break;
+			  case CUBE_JUMP:
+				  if (RAIN_TIME > STEP_TIME + 0X1){
+					  CUBE_JUMP_TIME -= STEP_TIME;
+				  }else{
+					  CUBE_JUMP_TIME = STEP_TIME;
+				  }
+				  break;
+			  case FIREWORKS:
+				  if (FIREWORK_TIME > STEP_TIME + 0X1){
+					  FIREWORK_TIME -= STEP_TIME;
+				  }else{
+					  FIREWORK_TIME = STEP_TIME;
+				  }
+				  break;
+			  case GLOW:
+				  if (GLOW_TIME > STEP_TIME + 0X1){
+					  GLOW_TIME-= STEP_TIME;
+				  }else{
+					  GLOW_TIME = STEP_TIME;
+				  }
+				  break;
+			  case TEXT:
+				  if (TEXT_TIME > STEP_TIME + 0X1){
+					  TEXT_TIME-= STEP_TIME;
+				  }else{
+					  TEXT_TIME= STEP_TIME;
+				  }
+				  break;
+			  default:
+				  break;
+		  } //end switch currentEffect
+	  }//end if getStatBoton...
 
 	  switch (currentEffect) {
 		  case RAIN: rain(); break;
@@ -390,6 +565,7 @@ int main(void)
 		  case GLOW: glow(); break;
 		  case BLOCKOUT: runBlockOut(); break;
 		  case TEXT: text("DEMO0123456789", 14); break;
+		  case DEMO: demo();
 		  case LIT: lit(); break;
 		  default: cubeJump();
 	  } //end switch currentEffect
@@ -399,6 +575,7 @@ int main(void)
 //	  testBlockOut();
 //	  lightCube();
 //	  runBlockOut();
+//	  demo();
 
 	  if (flag_nextLevel != 0){
 		  renderCube();
@@ -926,8 +1103,10 @@ void cubeJump() {
 void demo(void){
 	if (!periodo_demo){
 		switch (index_demo) {
-			case RAIN: index_demo = PLANE_BOING; break;
+//			case RAIN: index_demo = PLANE_BOING; break;
+			case RAIN: index_demo = SEND_VOXELS; break;
 			case PLANE_BOING: index_demo = SEND_VOXELS; break;
+//			case PLANE_BOING: index_demo = WOOP_WOOP; break;
 			case SEND_VOXELS: index_demo = WOOP_WOOP; break;
 			case WOOP_WOOP: index_demo = CUBE_JUMP; break;
 			case CUBE_JUMP: index_demo = FIREWORKS; break;
@@ -937,7 +1116,13 @@ void demo(void){
 			default: index_demo = TEXT;
 		}
 
-		periodo_demo = 700;
+		clearCube();
+		loading = 1;
+		timer = 0;
+		srand(randomTimer);
+		randomTimer = 0;
+
+		periodo_demo = 1400;
 	} //end if !periodo_demo
 
 	switch (index_demo) {

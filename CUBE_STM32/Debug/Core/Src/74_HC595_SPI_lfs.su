@@ -1,2 +1,2 @@
-../Core/Src/74_HC595_SPI_lfs.c:16:6:spi_74HC595_init	24	static
-../Core/Src/74_HC595_SPI_lfs.c:28:6:spi_74HC595_Transmit	16	static
+74_HC595_SPI_lfs.c:16:6:spi_74HC595_init	24	static
+74_HC595_SPI_lfs.c:28:6:spi_74HC595_Transmit	16	static
