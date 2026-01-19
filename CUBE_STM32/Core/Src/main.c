@@ -55,8 +55,8 @@ typedef enum{
 	CUBE_JUMP,
 	FIREWORKS,
 	GLOW,
-	DEMO,
 	BLOCKOUT,
+	DEMO,
 	TEXT,
 	LIT,
 	TOTAL_EFFECTS,
@@ -97,6 +97,8 @@ typedef struct{
 //#define TEXT_TIME 0x8FFC
 //#define CLOCK_TIME 0x8FFC
 //#define FIREWORK_TIME 0x5FFC
+#define PERIODO_DEMO 800
+#define PERIODO_DEMO_TEXT 1200
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,14 +112,14 @@ typedef struct{
 
 //variables tiempo
 uint16_t RAIN_TIME = 0x4FFC;
-uint16_t PLANE_BOING_TIME = 0x4FFC;
-uint16_t SEND_VOXELS_TIME = 0x47FC;
+uint16_t PLANE_BOING_TIME = 0x37FF;
+uint16_t SEND_VOXELS_TIME = 0x27FF;
 uint16_t WOOP_WOOP_TIME = 0x4FFC;
-uint16_t CUBE_JUMP_TIME = 0x470F;
-uint16_t GLOW_TIME = 0x8FFC;
-uint16_t TEXT_TIME = 0x6FFC;
-uint16_t CLOCK_TIME = 0x8FFC;
+uint16_t CUBE_JUMP_TIME = 0x370F;
 uint16_t FIREWORK_TIME = 0x38EF;
+uint16_t GLOW_TIME = 0x0800;
+uint16_t TEXT_TIME = 0x4FFC;
+uint16_t CLOCK_TIME = 0x8FFC;
 uint16_t STEP_TIME = 0X800;
 
 //caracteres
@@ -307,6 +309,7 @@ int main(void)
 //  currentEffect = RAIN;
 
   HAL_ADC_Start(&hadc1);
+  HAL_Delay(100);
   randomSeed = (uint16_t) HAL_ADC_GetValue(&hadc1);
   srand(randomSeed);
   HAL_ADC_Stop(&hadc1);
@@ -318,6 +321,24 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim3); // sincronizmo (10 * ms)
 
   HAL_UART_Receive_IT(&huart1, &rxChar, 1);
+
+  currentEffect = rand() % TOTAL_EFFECTS;
+  switch (currentEffect) {
+	  case BLOCKOUT:
+		  currentEffect = FIREWORKS;
+	  break;
+	  case DEMO:
+		  currentEffect = CUBE_JUMP;
+	  break;
+	  case TEXT:
+		  currentEffect = PLANE_BOING;
+	  break;
+	  case LIT:
+		  currentEffect = RAIN;
+	  break;
+	  default:
+	  break;
+  } //end switch currentEffect
 
 //  start_menu();
   /* USER CODE END 2 */
@@ -340,8 +361,8 @@ int main(void)
 
 		  if (flag_uart != 0){
 			  entradaJoystick = (char)rxChar;
-			  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
 			  flag_uart = 0;
+			  HAL_UART_Receive_IT(&huart1, &rxChar, 1);
 		  } //end if flag_uart
 
 		  if (periodo_blockOut != 0){
@@ -364,6 +385,9 @@ int main(void)
 	  if (flag_demo != 0){
 		  if (!periodo_demo){
 
+			  clearCube();
+			  loading = 1;
+			  timer = 0;
 			  currentEffect++;
 			  if (currentEffect >= TOTAL_EFFECTS) {
 				  currentEffect = RAIN;
@@ -371,38 +395,37 @@ int main(void)
 
 			  switch (currentEffect) {
 				  case RAIN:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case PLANE_BOING:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case SEND_VOXELS:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case WOOP_WOOP:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case CUBE_JUMP:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case FIREWORKS:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  case GLOW:
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
-				  case DEMO:
 				  case BLOCKOUT:
+				  case DEMO:
 					  currentEffect = TEXT;
-					  periodo_demo = 5100;
-				  break;
+					  periodo_demo = PERIODO_DEMO_TEXT;
 				  break;
 				  case TEXT:
-					  periodo_demo = 5100;
+					  periodo_demo = PERIODO_DEMO_TEXT;
 				  break;
 				  case LIT:
 					  currentEffect = RAIN;
-					  periodo_demo = 600;
+					  periodo_demo = PERIODO_DEMO;
 				  break;
 				  default:
 				  break;
@@ -412,48 +435,14 @@ int main(void)
 
 	  if (currentEffect != BLOCKOUT){
 		  if (entradaJoystick == '4'){
+			  clearCube();
 			  currentEffect = BLOCKOUT;
 			  entradaJoystick = 0;
+			  flag_demo = 0;
 		  }
 	  }
 
-	  if (getStatBoton(IN_UP) == FALL){ //UP
-		  clearCube();
-		  loading = 1;
-		  timer = 0;
-		  currentEffect++;
-		  if (currentEffect >= TOTAL_EFFECTS) {
-			  currentEffect = RAIN;
-		  }
-		  srand(randomTimer);
-		  randomTimer = 0;
-		  flag_demo = 0;
-//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
-//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
-//		  HAL_Delay(500);
-//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
-//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
-
-		  switch (currentEffect) {
-			  case RAIN: break;
-			  case PLANE_BOING: break;
-			  case SEND_VOXELS: break;
-			  case WOOP_WOOP: break;
-			  case CUBE_JUMP: break;
-			  case FIREWORKS: break;
-			  case GLOW: break;
-			  case DEMO: break;
-			  case BLOCKOUT:
-				  estatus_juego = JUEGO_IDLE;
-			  break;
-			  case TEXT: break;
-			  case LIT: break;
-			  default: break;
-		  } //end switch currentEffect
-
-	  } //end if getStatBoton...
-
-	  if (getStatBoton(IN_DOWN) == FALL){ //DOWN
+	  if (getStatBoton(IN_UP) == FALL){ //DOWN
 		  clearCube();
 		  loading = 1;
 		  timer = 0;
@@ -464,7 +453,13 @@ int main(void)
 
 		  srand(randomTimer);
 		  randomTimer = 0;
-		  flag_demo = 0;
+		  if (flag_demo != 0){
+			  clearCube();
+			  currentEffect = BLOCKOUT;
+			  entradaJoystick = 0;
+			  flag_demo = 0;
+		  }
+
 //		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
 //		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
 //		  HAL_Delay(500);
@@ -479,10 +474,52 @@ int main(void)
 			  case CUBE_JUMP: break;
 			  case FIREWORKS: break;
 			  case GLOW: break;
-			  case DEMO: break;
 			  case BLOCKOUT:
 				  estatus_juego = JUEGO_IDLE;
 			  break;
+			  case DEMO: break;
+			  case TEXT:
+				  currentEffect = DEMO;
+			  break;
+			  case LIT: break;
+			  default: break;
+		  } //end switch currentEffect
+
+	  } //end if getStatBoton...
+
+	  if (getStatBoton(IN_DOWN) == FALL){ //UP
+		  clearCube();
+		  loading = 1;
+		  timer = 0;
+		  currentEffect++;
+		  if (currentEffect >= TOTAL_EFFECTS) {
+			  currentEffect = RAIN;
+		  }
+		  srand(randomTimer);
+		  randomTimer = 0;
+		  if (flag_demo != 0){
+			  currentEffect = LIT;
+			  flag_demo = 0;
+		  }
+
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 1); //led verde: off
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 0); //led rojo: on
+//		  HAL_Delay(500);
+//		  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, 0); //led verde: on
+//		  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, 1); //led rojo: off
+
+		  switch (currentEffect) {
+			  case RAIN: break;
+			  case PLANE_BOING: break;
+			  case SEND_VOXELS: break;
+			  case WOOP_WOOP: break;
+			  case CUBE_JUMP: break;
+			  case FIREWORKS: break;
+			  case GLOW: break;
+			  case BLOCKOUT:
+				  estatus_juego = JUEGO_IDLE;
+			  break;
+			  case DEMO: break;
 			  case TEXT: break;
 			  case LIT: break;
 			  default: break;
@@ -626,13 +663,16 @@ int main(void)
 		  case GLOW: glow(); break;
 		  case DEMO: //demo();
 			  flag_demo = 1;
-			  periodo_demo = 5100;
+			  periodo_demo = PERIODO_DEMO_TEXT;
 			  currentEffect = TEXT;
 		  break;
 		  case BLOCKOUT: runBlockOut(); break;
-		  case TEXT: text("GRAVEDADCER0OAN0S", 17); break;
+		  case TEXT: text("DEMO", 4); break;
 		  case LIT: lit(); break;
-		  default: cubeJump();
+		  default:
+			  currentEffect = CUBE_JUMP;
+			  cubeJump();
+		  break;
 	  } //end switch currentEffect
 
 //	  drawCube(0, 0, 0, 8);
@@ -943,19 +983,54 @@ void text(char string[], uint8_t len) {
 
 			//charSelection = string[charCounter] - '0';
 			switch(string[charCounter]){
-				case 'D':
+				case 'A':
 					for (uint8_t i = 0; i < 8; i++) {
 						cube[i][0] = characters[10][i];
 					} //end for
 				break;
-				case 'E':
+				case 'C':
 					for (uint8_t i = 0; i < 8; i++) {
 						cube[i][0] = characters[11][i];
 					} //end for
 				break;
-				case 'M':
+				case 'D':
 					for (uint8_t i = 0; i < 8; i++) {
 						cube[i][0] = characters[12][i];
+					} //end for
+				break;
+				case 'E':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[13][i];
+					} //end for
+				break;
+				case 'G':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[14][i];
+					} //end for
+				break;
+				case 'M':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[15][i];
+					} //end for
+				break;
+				case 'N': //ENIE
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[16][i];
+					} //end for
+				break;
+				case 'R':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[17][i];
+					} //end for
+				break;
+				case 'S':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[18][i];
+					} //end for
+				break;
+				case 'V':
+					for (uint8_t i = 0; i < 8; i++) {
+						cube[i][0] = characters[19][i];
 					} //end for
 				break;
 				case 'O':

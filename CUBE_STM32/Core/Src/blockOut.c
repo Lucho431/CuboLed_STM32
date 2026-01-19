@@ -19,7 +19,10 @@ uint8_t flag_gameOver = 0; //se explica solo...
 uint8_t opcupacion[8][8] = {0}; //matriz de ocupacion
 uint8_t flag_updateJuego = 0;
 T_ESTATUS_JUEGO estatus_juego = JUEGO_IDLE;
+uint8_t last_indexPieza = 0;
+uint8_t piezaRepetida = 0; //cuenta cauntas veces seguidas se repite la pieza (si aparecen 3 piezas seguidas, se repitió 2 veces)
 int8_t index_pieza;
+
 int8_t pos_piezaX;
 int8_t pos_piezaY;
 int8_t pos_piezaZ;
@@ -108,6 +111,7 @@ void runBlockOut (void){
 			if (entradaJoystick != 0){
 				estatus_juego = ARRANCA_JUEGO;
 				entradaJoystick = 0;
+				flag_pieza = 0;
 			}
 
 		break;
@@ -203,6 +207,15 @@ void runBlockOut (void){
 			if (!flag_pieza){ //si no hay pieza...
 				srand(randomTimer);
 				index_pieza = 1 + (rand() % PIEZA_S_GRANDE);
+				if ( last_indexPieza != index_pieza ){
+					last_indexPieza = index_pieza;
+					piezaRepetida = 0;
+				}else{
+					if (piezaRepetida > 1){ //se repitió 2 veces o mas
+						break;
+					}
+					piezaRepetida++;
+				}
 //				index_pieza = 4;
 				// NOTA: coordenandas de la matriz: matriz[y][z] |=  (0x01 << x);
 
@@ -219,7 +232,6 @@ void runBlockOut (void){
 				} //end for ja
 
 				//posicion inicial de la pieza (desde la esquina 0,0,0 de la pieza)
-				index_pieza = 4;
 				pos_piezaX = (8 - pieza[index_pieza].lado) >> 1;
 				pos_piezaY = (8 - pieza[index_pieza].lado) >> 1;
 				pos_piezaZ = 6;
@@ -650,7 +662,7 @@ void runBlockOut (void){
 										//anula el movimiento
 										flag_movGiroProhibido = 1;
 										break; //sale del for o del case??
-									}else if ( (k + pos_piezaZ < 0) || (k + pos_piezaZ > 7)  ){
+									}else if ( (j + pos_piezaY < 0) || (j + pos_piezaY > 7)  ){
 										//anula el movimiento
 										flag_movGiroProhibido = 1;
 										break; //sale del for o del case??
